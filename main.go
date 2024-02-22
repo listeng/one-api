@@ -3,9 +3,6 @@ package main
 import (
 	"embed"
 	"fmt"
-	"github.com/gin-contrib/sessions"
-	"github.com/gin-contrib/sessions/cookie"
-	"github.com/gin-gonic/gin"
 	"one-api/common"
 	"one-api/common/config"
 	"one-api/common/logger"
@@ -16,6 +13,10 @@ import (
 	"one-api/router"
 	"os"
 	"strconv"
+
+	"github.com/gin-contrib/sessions"
+	"github.com/gin-contrib/sessions/cookie"
+	"github.com/gin-gonic/gin"
 )
 
 //go:embed web/build/*
@@ -82,6 +83,17 @@ func main() {
 		config.BatchUpdateEnabled = true
 		logger.SysLog("batch update enabled with interval " + strconv.Itoa(config.BatchUpdateInterval) + "s")
 		model.InitBatchUpdater()
+	}
+	if os.Getenv("BATCH_UPDATE_ENABLED") == "true" {
+		config.BatchUpdateEnabled = true
+		logger.SysLog("batch update enabled with interval " + strconv.Itoa(config.BatchUpdateInterval) + "s")
+		model.InitBatchUpdater()
+	}
+	if os.Getenv("CHATLOGIN_JWT_KEY") != "" {
+		config.ChatLoginJwtKey = os.Getenv("CHATLOGIN_JWT_KEY")
+	}
+	if os.Getenv("CHATLOGIN_AES_KEY") != "" {
+		config.ChatLoginAesKey = os.Getenv("CHATLOGIN_AES_KEY")
 	}
 	openai.InitTokenEncoders()
 

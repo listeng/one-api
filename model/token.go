@@ -3,11 +3,13 @@ package model
 import (
 	"errors"
 	"fmt"
-	"gorm.io/gorm"
 	"one-api/common"
 	"one-api/common/config"
 	"one-api/common/helper"
 	"one-api/common/logger"
+	"time"
+
+	"gorm.io/gorm"
 )
 
 type Token struct {
@@ -22,6 +24,43 @@ type Token struct {
 	RemainQuota    int    `json:"remain_quota" gorm:"default:0"`
 	UnlimitedQuota bool   `json:"unlimited_quota" gorm:"default:false"`
 	UsedQuota      int    `json:"used_quota" gorm:"default:0"` // used quota
+}
+
+func ResetUserToken(userId int) error {
+	var err error
+	err = DB.Model(&Token{}).Delete("user_id = ?", userId).Error
+
+	if err != nil {
+		return err
+	}
+
+	cleanToken := Token{
+		UserId:         userId,
+		Name:           time.Now().Format("20060102") + helper.GetRandomString(8),
+		Key:            helper.GenerateKey(),
+		CreatedTime:    helper.GetTimestamp(),
+		AccessedTime:   helper.GetTimestamp(),
+		UnlimitedQuota: true,
+	}
+	err = cleanToken.Insert()
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func GetUserFirstValidatedToken(userId int) (string, error) {
+	var tokens []*Token
+	var err error
+	err = DB.Where("user_id = ? and status = ?", userId, common.TokenStatusEnabled).Order("id desc").Limit(1).Find(&tokens).Error
+
+	if len(tokens) == 0 {
+		return "", errors.New("无有效令牌")
+	}
+
+	return tokens[0].Key, err
 }
 
 func GetAllUserTokens(userId int, startIdx int, num int) ([]*Token, error) {

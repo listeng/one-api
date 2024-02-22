@@ -2,10 +2,6 @@ package model
 
 import (
 	"fmt"
-	"gorm.io/driver/mysql"
-	"gorm.io/driver/postgres"
-	"gorm.io/driver/sqlite"
-	"gorm.io/gorm"
 	"one-api/common"
 	"one-api/common/config"
 	"one-api/common/helper"
@@ -13,6 +9,11 @@ import (
 	"os"
 	"strings"
 	"time"
+
+	"github.com/glebarez/sqlite"
+	"gorm.io/driver/mysql"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 var DB *gorm.DB

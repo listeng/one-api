@@ -1,6 +1,10 @@
 package controller
 
 import (
+	"bytes"
+	"crypto/aes"
+	"crypto/cipher"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -13,11 +17,189 @@ import (
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt"
 )
 
 type LoginRequest struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
+}
+
+func validateToken(tokenString string) (bool, int, error) {
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		// 确保 token 的签名方法符合预期
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+		return []byte(config.ChatLoginJwtKey), nil
+	})
+
+	if err != nil {
+		return false, 0, err
+	}
+
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		// 验证 iat 是否在2小时内
+		if iatClaim, ok := claims["iat"].(float64); ok {
+			iat := time.Unix(int64(iatClaim), 0)
+			if time.Since(iat) > 2*time.Hour {
+				return false, 0, fmt.Errorf("对话令牌已过期")
+			}
+		} else {
+			return false, 0, fmt.Errorf("对话令牌无效，缺少iat字段")
+		}
+
+		// 提取 sub 字段
+		sub, ok := claims["sub"].(float64)
+		if !ok {
+			return false, 0, fmt.Errorf("对话令牌无效，缺少sub字段")
+		}
+		return true, int(sub), nil
+	} else {
+		return false, 0, err
+	}
+}
+
+func encryptAES(plaintext, aesKey string) (string, error) {
+
+	block, err := aes.NewCipher([]byte(aesKey))
+	if err != nil {
+		return "", err
+	}
+
+	plaintextBytes := []byte(plaintext)
+	blockSize := block.BlockSize()
+	padding := blockSize - len(plaintextBytes)%blockSize
+	padtext := bytes.Repeat([]byte{byte(padding)}, padding)
+	plaintextBytes = append(plaintextBytes, padtext...)
+
+	ciphertext := make([]byte, len(plaintextBytes))
+	mode := cipher.NewCBCEncrypter(block, []byte(aesKey)[:blockSize])
+	mode.CryptBlocks(ciphertext, plaintextBytes)
+
+	return base64.StdEncoding.EncodeToString(ciphertext), nil
+}
+
+func RfreshToken(c *gin.Context) {
+	key := c.Query("key")
+	if key == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"success": false, "message": "缺少用户令牌参数"})
+		return
+	}
+
+	validated, userId, err := validateToken(key)
+
+	if !validated || err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "message": err})
+		return
+	}
+
+	// 创建一个新的token对象，指定签名方法和Claims
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"sub": userId,
+		"iat": time.Now().UTC().Unix(),
+	})
+
+	// 使用定义的密钥签名并获取完整的编码后的字符串token
+	tokenString, err := token.SignedString([]byte(config.ChatLoginJwtKey))
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"message": err.Error(),
+			"success": false,
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "",
+		"data":    tokenString,
+	})
+}
+
+func LoginChat(c *gin.Context) {
+	var loginRequest LoginRequest
+	err := json.NewDecoder(c.Request.Body).Decode(&loginRequest)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"message": "无效的参数",
+			"success": false,
+		})
+		return
+	}
+	username := loginRequest.Username
+	password := loginRequest.Password
+	if username == "" || password == "" {
+		c.JSON(http.StatusOK, gin.H{
+			"message": "无效的参数",
+			"success": false,
+		})
+		return
+	}
+	user := model.User{
+		Username: username,
+		Password: password,
+	}
+	err = user.ValidateAndFill()
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"message": err.Error(),
+			"success": false,
+		})
+		return
+	}
+
+	// 创建一个新的token对象，指定签名方法和Claims
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"sub": user.Id,
+		"iat": time.Now().UTC().Unix(),
+	})
+
+	// 使用定义的密钥签名并获取完整的编码后的字符串token
+	tokenString, err := token.SignedString([]byte(config.ChatLoginJwtKey))
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"message": err.Error(),
+			"success": false,
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "",
+		"data":    tokenString,
+	})
+}
+
+func GetChatkey(c *gin.Context) {
+	key := c.Query("key")
+	if key == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"success": false, "message": "缺少用户令牌参数"})
+		return
+	}
+
+	validated, userId, err := validateToken(key)
+
+	if !validated || err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "message": err})
+		return
+	}
+
+	token, err := model.GetUserFirstValidatedToken(userId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "message": "没有有效的对话令牌"})
+		return
+	}
+
+	aesKey := config.ChatLoginAesKey
+	encryptedKey, err := encryptAES(token, aesKey)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "message": err})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"success": true, "api_key": encryptedKey})
 }
 
 func Login(c *gin.Context) {
@@ -616,6 +798,16 @@ func ManageUser(c *gin.Context) {
 		return
 	}
 	switch req.Action {
+	case "resettoken":
+		err := model.ResetUserToken(user.Id)
+		if err != nil {
+			c.JSON(http.StatusOK, gin.H{
+				"success": false,
+				"message": "重置对话令牌发生错误：" + err.Error(),
+			})
+
+			return
+		}
 	case "disable":
 		user.Status = common.UserStatusDisabled
 		if user.Role == common.RoleRootUser {

@@ -309,6 +309,16 @@ const UsersTable = () => {
                       >
                         编辑
                       </Button>
+                      <Button
+                        size={'small'}
+                        color={'red'}
+                        onClick={() => {
+                          manageUser(user.username, 'resettoken', idx);
+                        }}
+                        disabled={user.role === 100}
+                      >
+                        复位令牌
+                      </Button>
                     </div>
                   </Table.Cell>
                 </Table.Row>

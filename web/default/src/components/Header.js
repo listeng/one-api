@@ -22,7 +22,8 @@ let headerButtons = [
   {
     name: '令牌',
     to: '/token',
-    icon: 'key'
+    icon: 'key',
+    admin: true
   },
   {
     name: '兑换',
