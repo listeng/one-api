@@ -3,10 +3,11 @@ package channel
 import (
 	"errors"
 	"fmt"
-	"github.com/gin-gonic/gin"
-	"github.com/songquanpeng/one-api/relay/util"
 	"io"
 	"net/http"
+	"one-api/relay/util"
+
+	"github.com/gin-gonic/gin"
 )
 
 func SetupCommonRequestHeader(c *gin.Context, req *http.Request, meta *util.RelayMeta) {

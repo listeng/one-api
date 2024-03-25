@@ -6,11 +6,12 @@ import (
 	"io"
 	"net/http"
 
+	"one-api/relay/channel"
+	"one-api/relay/constant"
+	"one-api/relay/model"
+	"one-api/relay/util"
+
 	"github.com/gin-gonic/gin"
-	"github.com/songquanpeng/one-api/relay/channel"
-	"github.com/songquanpeng/one-api/relay/constant"
-	"github.com/songquanpeng/one-api/relay/model"
-	"github.com/songquanpeng/one-api/relay/util"
 )
 
 type Adaptor struct {

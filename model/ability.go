@@ -1,7 +1,7 @@
 package model
 
 import (
-	"github.com/songquanpeng/one-api/common"
+	"one-api/common"
 	"strings"
 )
 

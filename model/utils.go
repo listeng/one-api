@@ -1,8 +1,8 @@
 package model
 
 import (
-	"github.com/songquanpeng/one-api/common/config"
-	"github.com/songquanpeng/one-api/common/logger"
+	"one-api/common/config"
+	"one-api/common/logger"
 	"sync"
 	"time"
 )

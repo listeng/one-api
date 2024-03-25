@@ -1,7 +1,7 @@
 package config
 
 import (
-	"github.com/songquanpeng/one-api/common/env"
+	"one-api/common/env"
 	"os"
 	"strconv"
 	"sync"

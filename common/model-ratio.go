@@ -2,7 +2,7 @@ package common
 
 import (
 	"encoding/json"
-	"github.com/songquanpeng/one-api/common/logger"
+	"one-api/common/logger"
 	"strings"
 )
 

@@ -9,13 +9,14 @@ import (
 	"net/http"
 	"strings"
 
+	"one-api/common"
+	"one-api/common/helper"
+	"one-api/common/logger"
+	"one-api/relay/channel/openai"
+	"one-api/relay/constant"
+	"one-api/relay/model"
+
 	"github.com/gin-gonic/gin"
-	"github.com/songquanpeng/one-api/common"
-	"github.com/songquanpeng/one-api/common/helper"
-	"github.com/songquanpeng/one-api/common/logger"
-	"github.com/songquanpeng/one-api/relay/channel/openai"
-	"github.com/songquanpeng/one-api/relay/constant"
-	"github.com/songquanpeng/one-api/relay/model"
 )
 
 func ConvertRequest(request model.GeneralOpenAIRequest) *ChatRequest {

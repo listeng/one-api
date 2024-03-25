@@ -9,7 +9,7 @@ import (
 	"one-api/common/logger"
 	"strings"
 
-	"github.com/songquanpeng/one-api/common/blacklist"
+	"one-api/common/blacklist"
 
 	"gorm.io/gorm"
 )

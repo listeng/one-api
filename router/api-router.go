@@ -1,8 +1,8 @@
 package router
 
 import (
-	"github.com/songquanpeng/one-api/controller"
-	"github.com/songquanpeng/one-api/middleware"
+	"one-api/controller"
+	"one-api/middleware"
 
 	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
@@ -29,6 +29,7 @@ func SetApiRouter(router *gin.Engine) {
 
 		apiRouter.POST("/chatlogin", middleware.CriticalRateLimit(), controller.LoginChat)
 		apiRouter.POST("/chatkey", middleware.CriticalRateLimit(), controller.GetChatkey)
+		apiRouter.GET("/chatmodels", middleware.CriticalRateLimit(), controller.GetChatModels)
 
 		userRoute := apiRouter.Group("/user")
 		{

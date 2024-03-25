@@ -3,14 +3,15 @@ package gemini
 import (
 	"errors"
 	"fmt"
-	"github.com/gin-gonic/gin"
-	"github.com/songquanpeng/one-api/common/helper"
-	channelhelper "github.com/songquanpeng/one-api/relay/channel"
-	"github.com/songquanpeng/one-api/relay/channel/openai"
-	"github.com/songquanpeng/one-api/relay/model"
-	"github.com/songquanpeng/one-api/relay/util"
 	"io"
 	"net/http"
+	"one-api/common/helper"
+	channelhelper "one-api/relay/channel"
+	"one-api/relay/channel/openai"
+	"one-api/relay/model"
+	"one-api/relay/util"
+
+	"github.com/gin-gonic/gin"
 )
 
 type Adaptor struct {

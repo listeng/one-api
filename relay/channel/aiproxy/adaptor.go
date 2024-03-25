@@ -3,13 +3,14 @@ package aiproxy
 import (
 	"errors"
 	"fmt"
-	"github.com/gin-gonic/gin"
-	"github.com/songquanpeng/one-api/common"
-	"github.com/songquanpeng/one-api/relay/channel"
-	"github.com/songquanpeng/one-api/relay/model"
-	"github.com/songquanpeng/one-api/relay/util"
 	"io"
 	"net/http"
+	"one-api/common"
+	"one-api/relay/channel"
+	"one-api/relay/model"
+	"one-api/relay/util"
+
+	"github.com/gin-gonic/gin"
 )
 
 type Adaptor struct {

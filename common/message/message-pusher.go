@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"github.com/songquanpeng/one-api/common/config"
 	"net/http"
+	"one-api/common/config"
 )
 
 type request struct {

@@ -2,10 +2,11 @@ package common
 
 import (
 	"context"
-	"github.com/go-redis/redis/v8"
-	"github.com/songquanpeng/one-api/common/logger"
+	"one-api/common/logger"
 	"os"
 	"time"
+
+	"github.com/go-redis/redis/v8"
 )
 
 var RDB *redis.Client

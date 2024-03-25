@@ -1,10 +1,11 @@
 package util
 
 import (
-	"github.com/gin-gonic/gin"
-	"github.com/songquanpeng/one-api/common"
-	"github.com/songquanpeng/one-api/relay/constant"
+	"one-api/common"
+	"one-api/relay/constant"
 	"strings"
+
+	"github.com/gin-gonic/gin"
 )
 
 type RelayMeta struct {

@@ -2,8 +2,8 @@ package util
 
 import (
 	"context"
-	"github.com/songquanpeng/one-api/common/logger"
-	"github.com/songquanpeng/one-api/model"
+	"one-api/common/logger"
+	"one-api/model"
 )
 
 func ReturnPreConsumedQuota(ctx context.Context, preConsumedQuota int64, tokenId int) {

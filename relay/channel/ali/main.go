@@ -3,15 +3,16 @@ package ali
 import (
 	"bufio"
 	"encoding/json"
-	"github.com/gin-gonic/gin"
-	"github.com/songquanpeng/one-api/common"
-	"github.com/songquanpeng/one-api/common/helper"
-	"github.com/songquanpeng/one-api/common/logger"
-	"github.com/songquanpeng/one-api/relay/channel/openai"
-	"github.com/songquanpeng/one-api/relay/model"
 	"io"
 	"net/http"
+	"one-api/common"
+	"one-api/common/helper"
+	"one-api/common/logger"
+	"one-api/relay/channel/openai"
+	"one-api/relay/model"
 	"strings"
+
+	"github.com/gin-gonic/gin"
 )
 
 // https://help.aliyun.com/document_detail/613695.html?spm=a2c4g.2399480.0.0.1adb778fAdzP9w#341800c0f8w0r

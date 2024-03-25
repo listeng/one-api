@@ -4,17 +4,18 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
-	"github.com/gin-gonic/gin"
-	"github.com/songquanpeng/one-api/common"
-	"github.com/songquanpeng/one-api/common/helper"
-	"github.com/songquanpeng/one-api/common/logger"
-	"github.com/songquanpeng/one-api/relay/channel/openai"
-	"github.com/songquanpeng/one-api/relay/constant"
-	"github.com/songquanpeng/one-api/relay/model"
 	"io"
 	"net/http"
+	"one-api/common"
+	"one-api/common/helper"
+	"one-api/common/logger"
+	"one-api/relay/channel/openai"
+	"one-api/relay/constant"
+	"one-api/relay/model"
 	"strconv"
 	"strings"
+
+	"github.com/gin-gonic/gin"
 )
 
 // https://docs.aiproxy.io/dev/library#使用已经定制好的知识库进行对话问答

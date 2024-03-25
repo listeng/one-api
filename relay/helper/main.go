@@ -1,19 +1,19 @@
 package helper
 
 import (
-	"github.com/songquanpeng/one-api/relay/channel"
-	"github.com/songquanpeng/one-api/relay/channel/aiproxy"
-	"github.com/songquanpeng/one-api/relay/channel/ali"
-	"github.com/songquanpeng/one-api/relay/channel/anthropic"
-	"github.com/songquanpeng/one-api/relay/channel/baidu"
-	"github.com/songquanpeng/one-api/relay/channel/gemini"
-	"github.com/songquanpeng/one-api/relay/channel/ollama"
-	"github.com/songquanpeng/one-api/relay/channel/openai"
-	"github.com/songquanpeng/one-api/relay/channel/palm"
-	"github.com/songquanpeng/one-api/relay/channel/tencent"
-	"github.com/songquanpeng/one-api/relay/channel/xunfei"
-	"github.com/songquanpeng/one-api/relay/channel/zhipu"
-	"github.com/songquanpeng/one-api/relay/constant"
+	"one-api/relay/channel"
+	"one-api/relay/channel/aiproxy"
+	"one-api/relay/channel/ali"
+	"one-api/relay/channel/anthropic"
+	"one-api/relay/channel/baidu"
+	"one-api/relay/channel/gemini"
+	"one-api/relay/channel/ollama"
+	"one-api/relay/channel/openai"
+	"one-api/relay/channel/palm"
+	"one-api/relay/channel/tencent"
+	"one-api/relay/channel/xunfei"
+	"one-api/relay/channel/zhipu"
+	"one-api/relay/constant"
 )
 
 func GetAdaptor(apiType int) channel.Adaptor {

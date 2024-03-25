@@ -1,14 +1,14 @@
 package openai
 
 import (
-	"github.com/songquanpeng/one-api/common"
-	"github.com/songquanpeng/one-api/relay/channel/ai360"
-	"github.com/songquanpeng/one-api/relay/channel/baichuan"
-	"github.com/songquanpeng/one-api/relay/channel/groq"
-	"github.com/songquanpeng/one-api/relay/channel/lingyiwanwu"
-	"github.com/songquanpeng/one-api/relay/channel/minimax"
-	"github.com/songquanpeng/one-api/relay/channel/mistral"
-	"github.com/songquanpeng/one-api/relay/channel/moonshot"
+	"one-api/common"
+	"one-api/relay/channel/ai360"
+	"one-api/relay/channel/baichuan"
+	"one-api/relay/channel/groq"
+	"one-api/relay/channel/lingyiwanwu"
+	"one-api/relay/channel/minimax"
+	"one-api/relay/channel/mistral"
+	"one-api/relay/channel/moonshot"
 )
 
 var CompatibleChannels = []int{

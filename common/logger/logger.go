@@ -3,15 +3,16 @@ package logger
 import (
 	"context"
 	"fmt"
-	"github.com/gin-gonic/gin"
-	"github.com/songquanpeng/one-api/common/config"
-	"github.com/songquanpeng/one-api/common/helper"
 	"io"
 	"log"
+	"one-api/common/config"
+	"one-api/common/helper"
 	"os"
 	"path/filepath"
 	"sync"
 	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
 const (

@@ -1,13 +1,14 @@
 package middleware
 
 import (
+	"net/http"
+	"one-api/common"
+	"one-api/common/blacklist"
+	"one-api/model"
+	"strings"
+
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
-	"github.com/songquanpeng/one-api/common"
-	"github.com/songquanpeng/one-api/common/blacklist"
-	"github.com/songquanpeng/one-api/model"
-	"net/http"
-	"strings"
 )
 
 func authHelper(c *gin.Context, minRole int) {

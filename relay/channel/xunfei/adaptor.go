@@ -2,14 +2,15 @@ package xunfei
 
 import (
 	"errors"
-	"github.com/gin-gonic/gin"
-	"github.com/songquanpeng/one-api/relay/channel"
-	"github.com/songquanpeng/one-api/relay/channel/openai"
-	"github.com/songquanpeng/one-api/relay/model"
-	"github.com/songquanpeng/one-api/relay/util"
 	"io"
 	"net/http"
+	"one-api/relay/channel"
+	"one-api/relay/channel/openai"
+	"one-api/relay/model"
+	"one-api/relay/util"
 	"strings"
+
+	"github.com/gin-gonic/gin"
 )
 
 type Adaptor struct {
