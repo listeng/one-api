@@ -2,11 +2,11 @@ package util
 
 import (
 	"context"
-	"one-api/common/logger"
-	"one-api/model"
+	"github.com/songquanpeng/one-api/common/logger"
+	"github.com/songquanpeng/one-api/model"
 )
 
-func ReturnPreConsumedQuota(ctx context.Context, preConsumedQuota int, tokenId int) {
+func ReturnPreConsumedQuota(ctx context.Context, preConsumedQuota int64, tokenId int) {
 	if preConsumedQuota != 0 {
 		go func(ctx context.Context) {
 			// return pre-consumed quota

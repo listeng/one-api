@@ -17,6 +17,10 @@ import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
+
+	"github.com/gin-contrib/sessions"
+	"github.com/gin-contrib/sessions/cookie"
+	"github.com/gin-gonic/gin"
 )
 
 //go:embed web/build/*
@@ -31,10 +35,24 @@ func main() {
 	if config.DebugEnabled {
 		logger.SysLog("running in debug mode")
 	}
+	var err error
 	// Initialize SQL Database
-	err := model.InitDB()
+	model.DB, err = model.InitDB("SQL_DSN")
 	if err != nil {
 		logger.FatalLog("failed to initialize database: " + err.Error())
+	}
+	if os.Getenv("LOG_SQL_DSN") != "" {
+		logger.SysLog("using secondary database for table logs")
+		model.LOG_DB, err = model.InitDB("LOG_SQL_DSN")
+		if err != nil {
+			logger.FatalLog("failed to initialize secondary database: " + err.Error())
+		}
+	} else {
+		model.LOG_DB = model.DB
+	}
+	err = model.CreateRootAccountIfNeed()
+	if err != nil {
+		logger.FatalLog("database init error: " + err.Error())
 	}
 	defer func() {
 		err := model.CloseDB()
@@ -65,13 +83,6 @@ func main() {
 		go model.SyncOptions(config.SyncFrequency)
 		go model.SyncChannelCache(config.SyncFrequency)
 	}
-	if os.Getenv("CHANNEL_UPDATE_FREQUENCY") != "" {
-		frequency, err := strconv.Atoi(os.Getenv("CHANNEL_UPDATE_FREQUENCY"))
-		if err != nil {
-			logger.FatalLog("failed to parse CHANNEL_UPDATE_FREQUENCY: " + err.Error())
-		}
-		go controller.AutomaticallyUpdateChannels(frequency)
-	}
 	if os.Getenv("CHANNEL_TEST_FREQUENCY") != "" {
 		frequency, err := strconv.Atoi(os.Getenv("CHANNEL_TEST_FREQUENCY"))
 		if err != nil {
@@ -94,6 +105,9 @@ func main() {
 	}
 	if os.Getenv("CHATLOGIN_AES_KEY") != "" {
 		config.ChatLoginAesKey = os.Getenv("CHATLOGIN_AES_KEY")
+	}
+	if config.EnableMetric {
+		logger.SysLog("metric enabled, will disable channel if too much request failed")
 	}
 	openai.InitTokenEncoders()
 

@@ -7,6 +7,7 @@ import (
 	"one-api/common/config"
 	"one-api/common/helper"
 	"one-api/common/logger"
+	"one-api/common/message"
 	"time"
 
 	"gorm.io/gorm"
@@ -21,9 +22,9 @@ type Token struct {
 	CreatedTime    int64  `json:"created_time" gorm:"bigint"`
 	AccessedTime   int64  `json:"accessed_time" gorm:"bigint"`
 	ExpiredTime    int64  `json:"expired_time" gorm:"bigint;default:-1"` // -1 means never expired
-	RemainQuota    int    `json:"remain_quota" gorm:"default:0"`
+	RemainQuota    int64  `json:"remain_quota" gorm:"bigint;default:0"`
 	UnlimitedQuota bool   `json:"unlimited_quota" gorm:"default:false"`
-	UsedQuota      int    `json:"used_quota" gorm:"default:0"` // used quota
+	UsedQuota      int64  `json:"used_quota" gorm:"bigint;default:0"` // used quota
 }
 
 func ResetUserToken(userId int) error {
@@ -63,10 +64,21 @@ func GetUserFirstValidatedToken(userId int) (string, error) {
 	return tokens[0].Key, err
 }
 
-func GetAllUserTokens(userId int, startIdx int, num int) ([]*Token, error) {
+func GetAllUserTokens(userId int, startIdx int, num int, order string) ([]*Token, error) {
 	var tokens []*Token
 	var err error
-	err = DB.Where("user_id = ?", userId).Order("id desc").Limit(num).Offset(startIdx).Find(&tokens).Error
+	query := DB.Where("user_id = ?", userId)
+
+	switch order {
+	case "remain_quota":
+		query = query.Order("unlimited_quota desc, remain_quota desc")
+	case "used_quota":
+		query = query.Order("used_quota desc")
+	default:
+		query = query.Order("id desc")
+	}
+
+	err = query.Limit(num).Offset(startIdx).Find(&tokens).Error
 	return tokens, err
 }
 
@@ -176,7 +188,7 @@ func DeleteTokenById(id int, userId int) (err error) {
 	return token.Delete()
 }
 
-func IncreaseTokenQuota(id int, quota int) (err error) {
+func IncreaseTokenQuota(id int, quota int64) (err error) {
 	if quota < 0 {
 		return errors.New("quota 不能为负数！")
 	}
@@ -187,7 +199,7 @@ func IncreaseTokenQuota(id int, quota int) (err error) {
 	return increaseTokenQuota(id, quota)
 }
 
-func increaseTokenQuota(id int, quota int) (err error) {
+func increaseTokenQuota(id int, quota int64) (err error) {
 	err = DB.Model(&Token{}).Where("id = ?", id).Updates(
 		map[string]interface{}{
 			"remain_quota":  gorm.Expr("remain_quota + ?", quota),
@@ -198,7 +210,7 @@ func increaseTokenQuota(id int, quota int) (err error) {
 	return err
 }
 
-func DecreaseTokenQuota(id int, quota int) (err error) {
+func DecreaseTokenQuota(id int, quota int64) (err error) {
 	if quota < 0 {
 		return errors.New("quota 不能为负数！")
 	}
@@ -209,7 +221,7 @@ func DecreaseTokenQuota(id int, quota int) (err error) {
 	return decreaseTokenQuota(id, quota)
 }
 
-func decreaseTokenQuota(id int, quota int) (err error) {
+func decreaseTokenQuota(id int, quota int64) (err error) {
 	err = DB.Model(&Token{}).Where("id = ?", id).Updates(
 		map[string]interface{}{
 			"remain_quota":  gorm.Expr("remain_quota - ?", quota),
@@ -220,7 +232,7 @@ func decreaseTokenQuota(id int, quota int) (err error) {
 	return err
 }
 
-func PreConsumeTokenQuota(tokenId int, quota int) (err error) {
+func PreConsumeTokenQuota(tokenId int, quota int64) (err error) {
 	if quota < 0 {
 		return errors.New("quota 不能为负数！")
 	}
@@ -252,7 +264,7 @@ func PreConsumeTokenQuota(tokenId int, quota int) (err error) {
 			}
 			if email != "" {
 				topUpLink := fmt.Sprintf("%s/topup", config.ServerAddress)
-				err = common.SendEmail(prompt, email,
+				err = message.SendEmail(prompt, email,
 					fmt.Sprintf("%s，当前剩余额度为 %d，为了不影响您的使用，请及时充值。<br/>充值链接：<a href='%s'>%s</a>", prompt, userQuota, topUpLink, topUpLink))
 				if err != nil {
 					logger.SysError("failed to send email" + err.Error())
@@ -270,7 +282,7 @@ func PreConsumeTokenQuota(tokenId int, quota int) (err error) {
 	return err
 }
 
-func PostConsumeTokenQuota(tokenId int, quota int) (err error) {
+func PostConsumeTokenQuota(tokenId int, quota int64) (err error) {
 	token, err := GetTokenById(tokenId)
 	if quota > 0 {
 		err = DecreaseUserQuota(token.UserId, quota)

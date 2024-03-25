@@ -9,3 +9,4 @@ logs
 data
 ./one-api
 ./one-api.db
+/web/node_modules

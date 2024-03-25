@@ -7,11 +7,11 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"github.com/songquanpeng/one-api/common"
+	"github.com/songquanpeng/one-api/common/config"
+	"github.com/songquanpeng/one-api/common/helper"
+	"github.com/songquanpeng/one-api/model"
 	"net/http"
-	"one-api/common"
-	"one-api/common/config"
-	"one-api/common/helper"
-	"one-api/model"
 	"strconv"
 	"time"
 
@@ -362,24 +362,27 @@ func Register(c *gin.Context) {
 }
 
 func GetAllUsers(c *gin.Context) {
-	p, _ := strconv.Atoi(c.Query("p"))
-	if p < 0 {
-		p = 0
-	}
-	users, err := model.GetAllUsers(p*config.ItemsPerPage, config.ItemsPerPage)
-	if err != nil {
-		c.JSON(http.StatusOK, gin.H{
-			"success": false,
-			"message": err.Error(),
-		})
-		return
-	}
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"message": "",
-		"data":    users,
-	})
-	return
+    p, _ := strconv.Atoi(c.Query("p"))
+    if p < 0 {
+        p = 0
+    }
+    
+    order := c.DefaultQuery("order", "")
+    users, err := model.GetAllUsers(p*config.ItemsPerPage, config.ItemsPerPage, order)
+	
+    if err != nil {
+        c.JSON(http.StatusOK, gin.H{
+            "success": false,
+            "message": err.Error(),
+        })
+        return
+    }
+    
+    c.JSON(http.StatusOK, gin.H{
+        "success": true,
+        "message": "",
+        "data":    users,
+    })
 }
 
 func SearchUsers(c *gin.Context) {
