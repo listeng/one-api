@@ -8,12 +8,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 	"one-api/common"
 	"one-api/common/config"
 	"one-api/common/helper"
 	"one-api/model"
+	"os"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/gin-contrib/sessions"
@@ -24,6 +27,100 @@ import (
 type LoginRequest struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
+}
+
+type QyLoginRequest struct {
+	Code string `json:"code"`
+}
+
+// AccessTokenResponse 用于解析从企业微信API获取的响应
+type AccessTokenResponse struct {
+	AccessToken string `json:"access_token"`
+	ExpiresIn   int    `json:"expires_in"` // accessToken的有效期，单位秒
+	Errcode     int    `json:"errcode"`
+	Errmsg      string `json:"errmsg"`
+}
+
+// TokenHolder 用于存储accessToken及其过期时间
+type TokenHolder struct {
+	AccessToken string
+	Expires     time.Time
+	mutex       sync.Mutex
+}
+
+var (
+	tokenHolder = TokenHolder{}
+)
+
+func getAccessToken() (string, error) {
+	tokenHolder.mutex.Lock()
+	defer tokenHolder.mutex.Unlock()
+
+	corpid := os.Getenv("QY_APPID")
+	corpsecret := os.Getenv("QY_SECRET")
+
+	// 如果当前token未过期，则直接返回
+	if tokenHolder.AccessToken != "" && time.Now().Before(tokenHolder.Expires) {
+		return tokenHolder.AccessToken, nil
+	}
+
+	// 否则，从企业微信API获取新的accessToken
+	url := fmt.Sprintf("https://qyapi.weixin.qq.com/cgi-bin/gettoken?corpid=%s&corpsecret=%s", corpid, corpsecret)
+	resp, err := http.Get(url)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	var result AccessTokenResponse
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return "", err
+	}
+
+	if result.Errcode != 0 {
+		return "", fmt.Errorf("获取accessToken失败: %s", result.Errmsg)
+	}
+
+	// 更新存储的accessToken和过期时间
+	tokenHolder.AccessToken = result.AccessToken
+	// 设置accessToken的过期时间，留出一小段时间作为缓冲
+	tokenHolder.Expires = time.Now().Add(time.Duration(result.ExpiresIn-300) * time.Second)
+
+	return tokenHolder.AccessToken, nil
+}
+
+func getQyUserinfo(code string) (string, error) {
+	accessToken, err := getAccessToken()
+
+	if err != nil {
+		return "", err
+	}
+
+	url := fmt.Sprintf("https://qyapi.weixin.qq.com/cgi-bin/auth/getuserinfo?access_token=%s&code=%s", accessToken, code)
+	resp, err := http.Get(url)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	var result interface{}
+	err = json.NewDecoder(resp.Body).Decode(&result)
+	if err != nil {
+		fmt.Println("用户信息解码失败:", err)
+		return "", err
+	}
+
+	data, ok := result.(map[string]interface{})
+	if !ok {
+		return "", fmt.Errorf("用户信息解码错误")
+	}
+
+	userid, exists := data["userid"]
+	if !exists {
+		return "", fmt.Errorf("userid字段不存在")
+	}
+
+	return userid.(string), nil
 }
 
 func validateToken(tokenString string) (bool, int, error) {
@@ -148,6 +245,89 @@ func LoginChat(c *gin.Context) {
 			"success": false,
 		})
 		return
+	}
+
+	// 创建一个新的token对象，指定签名方法和Claims
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"sub": user.Id,
+		"iat": time.Now().UTC().Unix(),
+	})
+
+	// 使用定义的密钥签名并获取完整的编码后的字符串token
+	tokenString, err := token.SignedString([]byte(config.ChatLoginJwtKey))
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"message": err.Error(),
+			"success": false,
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "",
+		"data":    tokenString,
+	})
+}
+
+func LoginChatQYRedirect(c *gin.Context) {
+	appid := os.Getenv("QY_APPID")
+	redirectUrl := url.QueryEscape(os.Getenv("QY_REURL"))
+	agentId := os.Getenv("QY_AGENTID")
+	url := "https://open.weixin.qq.com/connect/oauth2/authorize?appid=" + appid + "&redirect_uri=" + redirectUrl + "&response_type=code&scope=snsapi_base&state=STATE&agentid=" + agentId + "#wechat_redirect"
+
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "",
+		"data":    url,
+	})
+}
+
+func LoginChatQY(c *gin.Context) {
+	var loginRequest QyLoginRequest
+	err := json.NewDecoder(c.Request.Body).Decode(&loginRequest)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"message": "无效的参数",
+			"success": false,
+		})
+		return
+	}
+	code := loginRequest.Code
+	if code == "" {
+		c.JSON(http.StatusOK, gin.H{
+			"message": "无效的参数[CODE NOT FOUND]",
+			"success": false,
+		})
+		return
+	}
+
+	userid, err := getQyUserinfo(code)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"message": err.Error(),
+			"success": false,
+		})
+		return
+	}
+
+	user := model.User{
+		Username: userid,
+	}
+	err = user.FillUserByUsername()
+	if err != nil {
+		cleanUser := model.User{
+			Username:    userid,
+			Password:    "abcacbQWE!@#!!!@",
+			DisplayName: userid,
+		}
+		if err := cleanUser.Insert(0); err != nil {
+			c.JSON(http.StatusOK, gin.H{
+				"message": err.Error(),
+				"success": false,
+			})
+			return
+		}
 	}
 
 	// 创建一个新的token对象，指定签名方法和Claims

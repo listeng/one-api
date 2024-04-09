@@ -28,6 +28,8 @@ func SetApiRouter(router *gin.Engine) {
 		apiRouter.GET("/oauth/email/bind", middleware.CriticalRateLimit(), middleware.UserAuth(), controller.EmailBind)
 
 		apiRouter.POST("/chatlogin", middleware.CriticalRateLimit(), controller.LoginChat)
+		apiRouter.GET("/qychatlogin", middleware.CriticalRateLimit(), controller.LoginChatQYRedirect)
+		apiRouter.POST("/qychatlogin", middleware.CriticalRateLimit(), controller.LoginChatQY)
 		apiRouter.POST("/chatkey", middleware.CriticalRateLimit(), controller.GetChatkey)
 		apiRouter.GET("/chatmodels", middleware.CriticalRateLimit(), controller.GetChatModels)
 
