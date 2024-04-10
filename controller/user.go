@@ -7,6 +7,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"net/url"
 	"one-api/common"
@@ -97,6 +98,9 @@ func getQyUserinfo(code string) (string, error) {
 	}
 
 	url := fmt.Sprintf("https://qyapi.weixin.qq.com/cgi-bin/auth/getuserinfo?access_token=%s&code=%s", accessToken, code)
+
+	fmt.Println(url)
+
 	resp, err := http.Get(url)
 	if err != nil {
 		return "", err
@@ -117,8 +121,11 @@ func getQyUserinfo(code string) (string, error) {
 
 	userid, exists := data["userid"]
 	if !exists {
+		fmt.Printf("qy response: %v", data)
 		return "", fmt.Errorf("userid字段不存在")
 	}
+
+	fmt.Printf("qy user: %s", userid)
 
 	return userid.(string), nil
 }
@@ -276,6 +283,8 @@ func LoginChatQYRedirect(c *gin.Context) {
 	agentId := os.Getenv("QY_AGENTID")
 	url := "https://open.weixin.qq.com/connect/oauth2/authorize?appid=" + appid + "&redirect_uri=" + redirectUrl + "&response_type=code&scope=snsapi_base&state=STATE&agentid=" + agentId + "#wechat_redirect"
 
+	log.Println(url)
+
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"message": "",
@@ -287,6 +296,7 @@ func LoginChatQY(c *gin.Context) {
 	var loginRequest QyLoginRequest
 	err := json.NewDecoder(c.Request.Body).Decode(&loginRequest)
 	if err != nil {
+		log.Println(err)
 		c.JSON(http.StatusOK, gin.H{
 			"message": "无效的参数",
 			"success": false,
@@ -295,6 +305,7 @@ func LoginChatQY(c *gin.Context) {
 	}
 	code := loginRequest.Code
 	if code == "" {
+		log.Println(err)
 		c.JSON(http.StatusOK, gin.H{
 			"message": "无效的参数[CODE NOT FOUND]",
 			"success": false,
@@ -304,6 +315,7 @@ func LoginChatQY(c *gin.Context) {
 
 	userid, err := getQyUserinfo(code)
 	if err != nil {
+		log.Println(err)
 		c.JSON(http.StatusOK, gin.H{
 			"message": err.Error(),
 			"success": false,
@@ -315,19 +327,24 @@ func LoginChatQY(c *gin.Context) {
 		Username: userid,
 	}
 	err = user.FillUserByUsername()
-	if err != nil {
+	if err != nil || user.Id == 0 {
+		log.Println("create new user")
 		cleanUser := model.User{
 			Username:    userid,
 			Password:    "abcacbQWE!@#!!!@",
 			DisplayName: userid,
+			Group:       "vip",
 		}
 		if err := cleanUser.Insert(0); err != nil {
+			log.Println(err)
 			c.JSON(http.StatusOK, gin.H{
 				"message": err.Error(),
 				"success": false,
 			})
 			return
 		}
+
+		user = cleanUser
 	}
 
 	// 创建一个新的token对象，指定签名方法和Claims
@@ -339,6 +356,7 @@ func LoginChatQY(c *gin.Context) {
 	// 使用定义的密钥签名并获取完整的编码后的字符串token
 	tokenString, err := token.SignedString([]byte(config.ChatLoginJwtKey))
 	if err != nil {
+		log.Println(err)
 		c.JSON(http.StatusOK, gin.H{
 			"message": err.Error(),
 			"success": false,
