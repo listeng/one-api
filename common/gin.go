@@ -3,15 +3,15 @@ package common
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/gin-gonic/gin"
 	"io"
+	"one-api/common/ctxkey"
 	"strings"
+
+	"github.com/gin-gonic/gin"
 )
 
-const KeyRequestBody = "key_request_body"
-
 func GetRequestBody(c *gin.Context) ([]byte, error) {
-	requestBody, _ := c.Get(KeyRequestBody)
+	requestBody, _ := c.Get(ctxkey.KeyRequestBody)
 	if requestBody != nil {
 		return requestBody.([]byte), nil
 	}
@@ -20,7 +20,7 @@ func GetRequestBody(c *gin.Context) ([]byte, error) {
 		return nil, err
 	}
 	_ = c.Request.Body.Close()
-	c.Set(KeyRequestBody, requestBody)
+	c.Set(ctxkey.KeyRequestBody, requestBody)
 	return requestBody.([]byte), nil
 }
 

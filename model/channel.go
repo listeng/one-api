@@ -3,12 +3,18 @@ package model
 import (
 	"encoding/json"
 	"fmt"
-	"one-api/common"
 	"one-api/common/config"
 	"one-api/common/helper"
 	"one-api/common/logger"
 
 	"gorm.io/gorm"
+)
+
+const (
+	ChannelStatusUnknown          = 0
+	ChannelStatusEnabled          = 1 // don't use 0, 0 is the default value!
+	ChannelStatusManuallyDisabled = 2 // also don't use 0
+	ChannelStatusAutoDisabled     = 3
 )
 
 type Channel struct {
@@ -22,7 +28,7 @@ type Channel struct {
 	TestTime           int64   `json:"test_time" gorm:"bigint"`
 	ResponseTime       int     `json:"response_time"` // in milliseconds
 	BaseURL            *string `json:"base_url" gorm:"column:base_url;default:''"`
-	Other              string  `json:"other"`   // DEPRECATED: please save config to field Config
+	Other              *string `json:"other"`   // DEPRECATED: please save config to field Config
 	Balance            float64 `json:"balance"` // in USD
 	BalanceUpdatedTime int64   `json:"balance_updated_time" gorm:"bigint"`
 	Models             string  `json:"models"`
@@ -33,6 +39,18 @@ type Channel struct {
 	Config             string  `json:"config"`
 }
 
+type ChannelConfig struct {
+	Region            string `json:"region,omitempty"`
+	SK                string `json:"sk,omitempty"`
+	AK                string `json:"ak,omitempty"`
+	UserID            string `json:"user_id,omitempty"`
+	APIVersion        string `json:"api_version,omitempty"`
+	LibraryID         string `json:"library_id,omitempty"`
+	Plugin            string `json:"plugin,omitempty"`
+	VertexAIProjectID string `json:"vertex_ai_project_id,omitempty"`
+	VertexAIADC       string `json:"vertex_ai_adc,omitempty"`
+}
+
 func GetAllChannels(startIdx int, num int, scope string) ([]*Channel, error) {
 	var channels []*Channel
 	var err error
@@ -40,7 +58,7 @@ func GetAllChannels(startIdx int, num int, scope string) ([]*Channel, error) {
 	case "all":
 		err = DB.Order("id desc").Find(&channels).Error
 	case "disabled":
-		err = DB.Order("id desc").Where("status = ? or status = ?", common.ChannelStatusAutoDisabled, common.ChannelStatusManuallyDisabled).Find(&channels).Error
+		err = DB.Order("id desc").Where("status = ? or status = ?", ChannelStatusAutoDisabled, ChannelStatusManuallyDisabled).Find(&channels).Error
 	default:
 		err = DB.Order("id desc").Limit(num).Offset(startIdx).Omit("key").Find(&channels).Error
 	}
@@ -156,20 +174,20 @@ func (channel *Channel) Delete() error {
 	return err
 }
 
-func (channel *Channel) LoadConfig() (map[string]string, error) {
+func (channel *Channel) LoadConfig() (ChannelConfig, error) {
+	var cfg ChannelConfig
 	if channel.Config == "" {
-		return nil, nil
+		return cfg, nil
 	}
-	cfg := make(map[string]string)
 	err := json.Unmarshal([]byte(channel.Config), &cfg)
 	if err != nil {
-		return nil, err
+		return cfg, err
 	}
 	return cfg, nil
 }
 
 func UpdateChannelStatusById(id int, status int) {
-	err := UpdateAbilityStatus(id, status == common.ChannelStatusEnabled)
+	err := UpdateAbilityStatus(id, status == ChannelStatusEnabled)
 	if err != nil {
 		logger.SysError("failed to update ability status: " + err.Error())
 	}
@@ -200,6 +218,6 @@ func DeleteChannelByStatus(status int64) (int64, error) {
 }
 
 func DeleteDisabledChannel() (int64, error) {
-	result := DB.Where("status = ? or status = ?", common.ChannelStatusAutoDisabled, common.ChannelStatusManuallyDisabled).Delete(&Channel{})
+	result := DB.Where("status = ? or status = ?", ChannelStatusAutoDisabled, ChannelStatusManuallyDisabled).Delete(&Channel{})
 	return result.RowsAffected, result.Error
 }

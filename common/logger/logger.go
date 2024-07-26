@@ -22,28 +22,25 @@ const (
 	loggerError = "ERR"
 )
 
-var setupLogLock sync.Mutex
-var setupLogWorking bool
+var setupLogOnce sync.Once
 
 func SetupLogger() {
-	if LogDir != "" {
-		ok := setupLogLock.TryLock()
-		if !ok {
-			log.Println("setup log is already working")
-			return
+	setupLogOnce.Do(func() {
+		if LogDir != "" {
+			var logPath string
+			if config.OnlyOneLogFile {
+				logPath = filepath.Join(LogDir, "oneapi.log")
+			} else {
+				logPath = filepath.Join(LogDir, fmt.Sprintf("oneapi-%s.log", time.Now().Format("20060102")))
+			}
+			fd, err := os.OpenFile(logPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+			if err != nil {
+				log.Fatal("failed to open log file")
+			}
+			gin.DefaultWriter = io.MultiWriter(os.Stdout, fd)
+			gin.DefaultErrorWriter = io.MultiWriter(os.Stderr, fd)
 		}
-		defer func() {
-			setupLogLock.Unlock()
-			setupLogWorking = false
-		}()
-		logPath := filepath.Join(LogDir, fmt.Sprintf("oneapi-%s.log", time.Now().Format("20060102")))
-		fd, err := os.OpenFile(logPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-		if err != nil {
-			log.Fatal("failed to open log file")
-		}
-		gin.DefaultWriter = io.MultiWriter(os.Stdout, fd)
-		gin.DefaultErrorWriter = io.MultiWriter(os.Stderr, fd)
-	}
+	})
 }
 
 func SysLog(s string) {
@@ -51,9 +48,17 @@ func SysLog(s string) {
 	_, _ = fmt.Fprintf(gin.DefaultWriter, "[SYS] %v | %s \n", t.Format("2006/01/02 - 15:04:05"), s)
 }
 
+func SysLogf(format string, a ...any) {
+	SysLog(fmt.Sprintf(format, a...))
+}
+
 func SysError(s string) {
 	t := time.Now()
 	_, _ = fmt.Fprintf(gin.DefaultErrorWriter, "[SYS] %v | %s \n", t.Format("2006/01/02 - 15:04:05"), s)
+}
+
+func SysErrorf(format string, a ...any) {
+	SysError(fmt.Sprintf(format, a...))
 }
 
 func Debug(ctx context.Context, msg string) {
@@ -95,18 +100,13 @@ func logHelper(ctx context.Context, level string, msg string) {
 	if level == loggerINFO {
 		writer = gin.DefaultWriter
 	}
-	id := ctx.Value(RequestIdKey)
+	id := ctx.Value(helper.RequestIdKey)
 	if id == nil {
 		id = helper.GenRequestID()
 	}
 	now := time.Now()
 	_, _ = fmt.Fprintf(writer, "[%s] %v | %s | %s \n", level, now.Format("2006/01/02 - 15:04:05"), id, msg)
-	if !setupLogWorking {
-		setupLogWorking = true
-		go func() {
-			SetupLogger()
-		}()
-	}
+	SetupLogger()
 }
 
 func FatalLog(v ...any) {

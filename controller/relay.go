@@ -8,32 +8,34 @@ import (
 	"net/http"
 	"one-api/common"
 	"one-api/common/config"
+	"one-api/common/ctxkey"
 	"one-api/common/helper"
 	"one-api/common/logger"
 	"one-api/middleware"
 	dbmodel "one-api/model"
 	"one-api/monitor"
-	"one-api/relay/constant"
 	"one-api/relay/controller"
 	"one-api/relay/model"
-	"one-api/relay/util"
+	"one-api/relay/relaymode"
 
 	"github.com/gin-gonic/gin"
 )
 
 // https://platform.openai.com/docs/api-reference/chat
 
-func relay(c *gin.Context, relayMode int) *model.ErrorWithStatusCode {
+func relayHelper(c *gin.Context, relayMode int) *model.ErrorWithStatusCode {
 	var err *model.ErrorWithStatusCode
 	switch relayMode {
-	case constant.RelayModeImagesGenerations:
+	case relaymode.ImagesGenerations:
 		err = controller.RelayImageHelper(c, relayMode)
-	case constant.RelayModeAudioSpeech:
+	case relaymode.AudioSpeech:
 		fallthrough
-	case constant.RelayModeAudioTranslation:
+	case relaymode.AudioTranslation:
 		fallthrough
-	case constant.RelayModeAudioTranscription:
+	case relaymode.AudioTranscription:
 		err = controller.RelayAudioHelper(c, relayMode)
+	case relaymode.Proxy:
+		err = controller.RelayProxyHelper(c, relayMode)
 	default:
 		err = controller.RelayTextHelper(c)
 	}
@@ -42,23 +44,24 @@ func relay(c *gin.Context, relayMode int) *model.ErrorWithStatusCode {
 
 func Relay(c *gin.Context) {
 	ctx := c.Request.Context()
-	relayMode := constant.Path2RelayMode(c.Request.URL.Path)
+	relayMode := relaymode.GetByPath(c.Request.URL.Path)
 	if config.DebugEnabled {
 		requestBody, _ := common.GetRequestBody(c)
 		logger.Debugf(ctx, "request body: %s", string(requestBody))
 	}
-	channelId := c.GetInt("channel_id")
-	bizErr := relay(c, relayMode)
+	channelId := c.GetInt(ctxkey.ChannelId)
+	userId := c.GetInt(ctxkey.Id)
+	bizErr := relayHelper(c, relayMode)
 	if bizErr == nil {
 		monitor.Emit(channelId, true)
 		return
 	}
 	lastFailedChannelId := channelId
-	channelName := c.GetString("channel_name")
-	group := c.GetString("group")
-	originalModel := c.GetString("original_model")
-	go processChannelRelayError(ctx, channelId, channelName, bizErr)
-	requestId := c.GetString(logger.RequestIdKey)
+	channelName := c.GetString(ctxkey.ChannelName)
+	group := c.GetString(ctxkey.Group)
+	originalModel := c.GetString(ctxkey.OriginalModel)
+	go processChannelRelayError(ctx, userId, channelId, channelName, bizErr)
+	requestId := c.GetString(helper.RequestIdKey)
 	retryTimes := config.RetryTimes
 	if !shouldRetry(c, bizErr.StatusCode) {
 		logger.Errorf(ctx, "relay error happen, status code is %d, won't retry in this case", bizErr.StatusCode)
@@ -67,7 +70,7 @@ func Relay(c *gin.Context) {
 	for i := retryTimes; i > 0; i-- {
 		channel, err := dbmodel.CacheGetRandomSatisfiedChannel(group, originalModel, i != retryTimes)
 		if err != nil {
-			logger.Errorf(ctx, "CacheGetRandomSatisfiedChannel failed: %w", err)
+			logger.Errorf(ctx, "CacheGetRandomSatisfiedChannel failed: %+v", err)
 			break
 		}
 		logger.Infof(ctx, "using channel #%d to retry (remain times %d)", channel.Id, i)
@@ -77,19 +80,22 @@ func Relay(c *gin.Context) {
 		middleware.SetupContextForSelectedChannel(c, channel, originalModel)
 		requestBody, err := common.GetRequestBody(c)
 		c.Request.Body = io.NopCloser(bytes.NewBuffer(requestBody))
-		bizErr = relay(c, relayMode)
+		bizErr = relayHelper(c, relayMode)
 		if bizErr == nil {
 			return
 		}
-		channelId := c.GetInt("channel_id")
+		channelId := c.GetInt(ctxkey.ChannelId)
 		lastFailedChannelId = channelId
-		channelName := c.GetString("channel_name")
-		go processChannelRelayError(ctx, channelId, channelName, bizErr)
+		channelName := c.GetString(ctxkey.ChannelName)
+		// BUG: bizErr is in race condition
+		go processChannelRelayError(ctx, userId, channelId, channelName, bizErr)
 	}
 	if bizErr != nil {
 		if bizErr.StatusCode == http.StatusTooManyRequests {
 			bizErr.Error.Message = "当前分组上游负载已饱和，请稍后再试"
 		}
+
+		// BUG: bizErr is in race condition
 		bizErr.Error.Message = helper.MessageWithRequestId(bizErr.Error.Message, requestId)
 		c.JSON(bizErr.StatusCode, gin.H{
 			"error": bizErr.Error,
@@ -98,7 +104,7 @@ func Relay(c *gin.Context) {
 }
 
 func shouldRetry(c *gin.Context, statusCode int) bool {
-	if _, ok := c.Get("specific_channel_id"); ok {
+	if _, ok := c.Get(ctxkey.SpecificChannelId); ok {
 		return false
 	}
 	if statusCode == http.StatusTooManyRequests {
@@ -116,10 +122,10 @@ func shouldRetry(c *gin.Context, statusCode int) bool {
 	return true
 }
 
-func processChannelRelayError(ctx context.Context, channelId int, channelName string, err *model.ErrorWithStatusCode) {
-	logger.Errorf(ctx, "relay error (channel #%d): %s", channelId, err.Message)
+func processChannelRelayError(ctx context.Context, userId int, channelId int, channelName string, err *model.ErrorWithStatusCode) {
+	logger.Errorf(ctx, "relay error (channel id %d, user id: %d): %s", channelId, userId, err.Message)
 	// https://platform.openai.com/docs/guides/error-codes/api-errors
-	if util.ShouldDisableChannel(&err.Error, err.StatusCode) {
+	if monitor.ShouldDisableChannel(&err.Error, err.StatusCode) {
 		monitor.DisableChannel(channelId, channelName, err.Message)
 	} else {
 		monitor.Emit(channelId, false)

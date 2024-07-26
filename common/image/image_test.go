@@ -8,6 +8,7 @@ import (
 	_ "image/png"
 	"io"
 	"net/http"
+	"one-api/common/client"
 	"strconv"
 	"strings"
 	"testing"
@@ -43,6 +44,11 @@ var (
 		{"https://upload.wikimedia.org/wikipedia/commons/6/62/102Cervus.jpg", "jpeg", 270, 230},
 	}
 )
+
+func TestMain(m *testing.M) {
+	client.Init()
+	m.Run()
+}
 
 func TestDecode(t *testing.T) {
 	// Bytes read: varies sometimes

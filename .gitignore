@@ -10,3 +10,5 @@ data
 one-api
 one-api.db
 /web/node_modules
+cmd.md
+.env

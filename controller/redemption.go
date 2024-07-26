@@ -3,7 +3,9 @@ package controller
 import (
 	"net/http"
 	"one-api/common/config"
+	"one-api/common/ctxkey"
 	"one-api/common/helper"
+	"one-api/common/random"
 	"one-api/model"
 	"strconv"
 
@@ -107,9 +109,9 @@ func AddRedemption(c *gin.Context) {
 	}
 	var keys []string
 	for i := 0; i < redemption.Count; i++ {
-		key := helper.GetUUID()
+		key := random.GetUUID()
 		cleanRedemption := model.Redemption{
-			UserId:      c.GetInt("id"),
+			UserId:      c.GetInt(ctxkey.Id),
 			Name:        redemption.Name,
 			Key:         key,
 			CreatedTime: helper.GetTimestamp(),

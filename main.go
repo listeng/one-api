@@ -4,12 +4,13 @@ import (
 	"embed"
 	"fmt"
 	"one-api/common"
+	"one-api/common/client"
 	"one-api/common/config"
 	"one-api/common/logger"
 	"one-api/controller"
 	"one-api/middleware"
 	"one-api/model"
-	"one-api/relay/channel/openai"
+	"one-api/relay/adaptor/openai"
 	"one-api/router"
 	"os"
 	"strconv"
@@ -17,35 +18,29 @@ import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
+	_ "github.com/joho/godotenv/autoload"
 )
 
 //go:embed web/build/*
 var buildFS embed.FS
 
 func main() {
+	common.Init()
 	logger.SetupLogger()
-	logger.SysLog(fmt.Sprintf("One API %s started", common.Version))
-	if os.Getenv("GIN_MODE") != "debug" {
+	logger.SysLogf("One API %s started", common.Version)
+
+	if os.Getenv("GIN_MODE") != gin.DebugMode {
 		gin.SetMode(gin.ReleaseMode)
 	}
 	if config.DebugEnabled {
 		logger.SysLog("running in debug mode")
 	}
-	var err error
+
 	// Initialize SQL Database
-	model.DB, err = model.InitDB("SQL_DSN")
-	if err != nil {
-		logger.FatalLog("failed to initialize database: " + err.Error())
-	}
-	if os.Getenv("LOG_SQL_DSN") != "" {
-		logger.SysLog("using secondary database for table logs")
-		model.LOG_DB, err = model.InitDB("LOG_SQL_DSN")
-		if err != nil {
-			logger.FatalLog("failed to initialize secondary database: " + err.Error())
-		}
-	} else {
-		model.LOG_DB = model.DB
-	}
+	model.InitDB()
+	model.InitLogDB()
+
+	var err error
 	err = model.CreateRootAccountIfNeed()
 	if err != nil {
 		logger.FatalLog("database init error: " + err.Error())
@@ -72,7 +67,7 @@ func main() {
 	}
 	if config.MemoryCacheEnabled {
 		logger.SysLog("memory cache enabled")
-		logger.SysError(fmt.Sprintf("sync frequency: %d seconds", config.SyncFrequency))
+		logger.SysLog(fmt.Sprintf("sync frequency: %d seconds", config.SyncFrequency))
 		model.InitChannelCache()
 	}
 	if config.MemoryCacheEnabled {
@@ -106,6 +101,7 @@ func main() {
 		logger.SysLog("metric enabled, will disable channel if too much request failed")
 	}
 	openai.InitTokenEncoders()
+	client.Init()
 
 	// Initialize HTTP server
 	server := gin.New()
@@ -123,6 +119,7 @@ func main() {
 	if port == "" {
 		port = strconv.Itoa(*common.Port)
 	}
+	logger.SysLogf("server started on http://localhost:%s", port)
 	err = server.Run(":" + port)
 	if err != nil {
 		logger.FatalLog("failed to start HTTP server: " + err.Error())
