@@ -9,6 +9,7 @@ import (
 	"one-api/common/logger"
 	"one-api/common/message"
 	"time"
+	"strconv"
 
 	"gorm.io/gorm"
 )
@@ -171,12 +172,14 @@ func (token *Token) SelectUpdate() error {
 
 func (token *Token) Delete() error {
 	var err error
+	logger.SysError("DELETE TOKEN By UserID: " + strconv.Itoa(token.UserId))
 	err = DB.Delete(token).Error
 	return err
 }
 
 func DeleteTokenById(id int, userId int) (err error) {
 	// Why we need userId here? In case user want to delete other's token.
+	logger.SysError("DELETE TOKEN By UserID: " + strconv.Itoa(userId))
 	if id == 0 || userId == 0 {
 		return errors.New("id 或 userId 为空！")
 	}

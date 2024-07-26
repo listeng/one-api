@@ -147,7 +147,7 @@ func validateToken(tokenString string) (bool, int, error) {
 		// 验证 iat 是否在2小时内
 		if iatClaim, ok := claims["iat"].(float64); ok {
 			iat := time.Unix(int64(iatClaim), 0)
-			if time.Since(iat) > 2*time.Hour {
+			if time.Since(iat) > 24*time.Hour*30 {
 				return false, 0, fmt.Errorf("对话令牌已过期")
 			}
 		} else {

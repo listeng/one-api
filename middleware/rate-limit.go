@@ -62,12 +62,12 @@ func redisRateLimiter(c *gin.Context, maxRequestNum int, duration int64, mark st
 }
 
 func memoryRateLimiter(c *gin.Context, maxRequestNum int, duration int64, mark string) {
-	key := mark + c.ClientIP()
-	if !inMemoryRateLimiter.Request(key, maxRequestNum, duration) {
-		c.Status(http.StatusTooManyRequests)
-		c.Abort()
-		return
-	}
+	// key := mark + c.ClientIP()
+	// if !inMemoryRateLimiter.Request(key, maxRequestNum, duration) {
+	// 	c.Status(http.StatusTooManyRequests)
+	// 	c.Abort()
+	// 	return
+	// }
 }
 
 func rateLimitFactory(maxRequestNum int, duration int64, mark string) func(c *gin.Context) {
