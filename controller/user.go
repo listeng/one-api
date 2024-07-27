@@ -271,6 +271,8 @@ func LoginChat(c *gin.Context) {
 		return
 	}
 
+	model.ResetUserToken(user.Id)
+
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"message": "",
