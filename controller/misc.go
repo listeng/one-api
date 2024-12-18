@@ -47,6 +47,17 @@ func GetStatus(c *gin.Context) {
 	return
 }
 
+func GetModelList(c *gin.Context) {
+	config.OptionMapRWMutex.RLock()
+	defer config.OptionMapRWMutex.RUnlock()
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "",
+		"data":    config.OptionMap["ModelList"],
+	})
+	return
+}
+
 func GetNotice(c *gin.Context) {
 	config.OptionMapRWMutex.RLock()
 	defer config.OptionMapRWMutex.RUnlock()

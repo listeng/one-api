@@ -12,14 +12,10 @@ const OtherSetting = () => {
     SystemName: '',
     Logo: '',
     HomePageContent: '',
-    Theme: ''
+    Theme: '',
+    ModelList: ''
   });
   let [loading, setLoading] = useState(false);
-  const [showUpdateModal, setShowUpdateModal] = useState(false);
-  const [updateData, setUpdateData] = useState({
-    tag_name: '',
-    content: ''
-  });
 
   const getOptions = async () => {
     const res = await API.get('/api/option/');
@@ -84,29 +80,12 @@ const OtherSetting = () => {
     await updateOption('About', inputs.About);
   };
 
+  const submitModelList = async () => {
+    await updateOption('ModelList', inputs.ModelList);
+  };
+
   const submitOption = async (key) => {
     await updateOption(key, inputs[key]);
-  };
-
-  const openGitHubRelease = () => {
-    window.location =
-      'https://github.com/songquanpeng/one-api/releases/latest';
-  };
-
-  const checkUpdate = async () => {
-    const res = await API.get(
-      'https://api.github.com/repos/songquanpeng/one-api/releases/latest'
-    );
-    const { tag_name, body } = res.data;
-    if (tag_name === process.env.REACT_APP_VERSION) {
-      showSuccess(`已是最新版本：${tag_name}`);
-    } else {
-      setUpdateData({
-        tag_name: tag_name,
-        content: marked.parse(body)
-      });
-      setShowUpdateModal(true);
-    }
   };
 
   return (
@@ -114,7 +93,6 @@ const OtherSetting = () => {
       <Grid.Column>
         <Form loading={loading}>
           <Header as='h3'>通用设置</Header>
-          <Form.Button onClick={checkUpdate}>检查更新</Form.Button>
           <Form.Group widths='equal'>
             <Form.TextArea
               label='公告'
@@ -194,30 +172,18 @@ const OtherSetting = () => {
             />
           </Form.Group>
           <Form.Button onClick={submitFooter}>设置页脚</Form.Button>
+          <Form.Group widths='equal'>
+            <Form.TextArea
+              label='模型列表'
+              value={inputs.ModelList}
+              name='ModelList'
+              onChange={handleInputChange}
+              style={{ minHeight: 150, fontFamily: 'JetBrains Mono, Consolas' }}
+            />
+          </Form.Group>
+          <Form.Button onClick={submitModelList}>保存模型列表</Form.Button>
         </Form>
       </Grid.Column>
-      <Modal
-        onClose={() => setShowUpdateModal(false)}
-        onOpen={() => setShowUpdateModal(true)}
-        open={showUpdateModal}
-      >
-        <Modal.Header>新版本：{updateData.tag_name}</Modal.Header>
-        <Modal.Content>
-          <Modal.Description>
-            <div dangerouslySetInnerHTML={{ __html: updateData.content }}></div>
-          </Modal.Description>
-        </Modal.Content>
-        <Modal.Actions>
-          <Button onClick={() => setShowUpdateModal(false)}>关闭</Button>
-          <Button
-            content='详情'
-            onClick={() => {
-              setShowUpdateModal(false);
-              openGitHubRelease();
-            }}
-          />
-        </Modal.Actions>
-      </Modal>
     </Grid>
   );
 };
