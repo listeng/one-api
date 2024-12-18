@@ -4,8 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"math"
 	"net/http"
+	"one-api/common/helper"
 	"one-api/relay/adaptor"
 	"one-api/relay/adaptor/openai"
 	"one-api/relay/meta"
@@ -66,13 +66,13 @@ func (a *Adaptor) ConvertRequest(c *gin.Context, relayMode int, request *model.G
 		baiduEmbeddingRequest, err := ConvertEmbeddingRequest(*request)
 		return baiduEmbeddingRequest, err
 	default:
-		// TopP (0.0, 1.0)
-		request.TopP = math.Min(0.99, request.TopP)
-		request.TopP = math.Max(0.01, request.TopP)
+		// TopP [0.0, 1.0]
+		request.TopP = helper.Float64PtrMax(request.TopP, 1)
+		request.TopP = helper.Float64PtrMin(request.TopP, 0)
 
-		// Temperature (0.0, 1.0)
-		request.Temperature = math.Min(0.99, request.Temperature)
-		request.Temperature = math.Max(0.01, request.Temperature)
+		// Temperature [0.0, 1.0]
+		request.Temperature = helper.Float64PtrMax(request.Temperature, 1)
+		request.Temperature = helper.Float64PtrMin(request.Temperature, 0)
 		a.SetVersionByModeName(request.Model)
 		if a.APIVersion == "v4" {
 			return request, nil

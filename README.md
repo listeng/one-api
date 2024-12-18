@@ -89,6 +89,8 @@ _✨ 通过标准的 OpenAI API 格式访问所有的大模型，开箱即用 �
    + [x] [DeepL](https://www.deepl.com/)
    + [x] [together.ai](https://www.together.ai/)
    + [x] [novita.ai](https://www.novita.ai/)
+   + [x] [硅基流动 SiliconCloud](https://siliconflow.cn/siliconcloud)
+   + [x] [xAI](https://x.ai/)
 2. 支持配置镜像以及众多[第三方代理服务](https://iamazing.cn/page/openai-api-third-party-services)。
 3. 支持通过**负载均衡**的方式访问多个渠道。
 4. 支持 **stream 模式**，可以通过流式传输实现打字机效果。
@@ -251,9 +253,9 @@ docker run --name chatgpt-web -d -p 3002:3002 -e OPENAI_API_BASE_URL=https://ope
 #### QChatGPT - QQ机器人
 项目主页：https://github.com/RockChinQ/QChatGPT
 
-根据文档完成部署后，在`config.py`设置配置项`openai_config`的`reverse_proxy`为 One API 后端地址，设置`api_key`为 One API 生成的key，并在配置项`completion_api_params`的`model`参数设置为 One API 支持的模型名称。
+根据[文档](https://qchatgpt.rockchin.top)完成部署后，在 `data/provider.json`设置`requester.openai-chat-completions.base-url`为 One API 实例地址，并填写 API Key 到 `keys.openai` 组中，设置 `model` 为要使用的模型名称。
 
-可安装 [Switcher 插件](https://github.com/RockChinQ/Switcher)在运行时切换所使用的模型。
+运行期间可以通过`!model`命令查看、切换可用模型。
 
 ### 部署到第三方平台
 <details>
@@ -398,6 +400,7 @@ graph LR
 26. `METRIC_SUCCESS_RATE_THRESHOLD`：请求成功率阈值，默认为 `0.8`。
 27. `INITIAL_ROOT_TOKEN`：如果设置了该值，则在系统首次启动时会自动创建一个值为该环境变量值的 root 用户令牌。
 28. `INITIAL_ROOT_ACCESS_TOKEN`：如果设置了该值，则在系统首次启动时会自动创建一个值为该环境变量的 root 用户创建系统管理令牌。
+29. `ENFORCE_INCLUDE_USAGE`：是否强制在 stream 模型下返回 usage，默认不开启，可选值为 `true` 和 `false`。
 
 ### 命令行参数
 1. `--port <port_number>`: 指定服务器监听的端口号，默认为 `3000`。

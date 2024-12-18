@@ -38,6 +38,7 @@ var PasswordLoginEnabled = true
 var PasswordRegisterEnabled = true
 var EmailVerificationEnabled = false
 var GitHubOAuthEnabled = false
+var OidcEnabled = false
 var WeChatAuthEnabled = false
 var TurnstileCheckEnabled = false
 var RegisterEnabled = true
@@ -72,6 +73,13 @@ var GitHubClientSecret = ""
 
 var LarkClientId = ""
 var LarkClientSecret = ""
+
+var OidcClientId = ""
+var OidcClientSecret = ""
+var OidcWellKnown = ""
+var OidcAuthorizationEndpoint = ""
+var OidcTokenEndpoint = ""
+var OidcUserinfoEndpoint = ""
 
 var WeChatServerAddress = ""
 var WeChatServerToken = ""
@@ -155,3 +163,5 @@ var OnlyOneLogFile = env.Bool("ONLY_ONE_LOG_FILE", false)
 var RelayProxy = env.String("RELAY_PROXY", "")
 var UserContentRequestProxy = env.String("USER_CONTENT_REQUEST_PROXY", "")
 var UserContentRequestTimeout = env.Int("USER_CONTENT_REQUEST_TIMEOUT", 30)
+
+var EnforceIncludeUsage = env.Bool("ENFORCE_INCLUDE_USAGE", false)

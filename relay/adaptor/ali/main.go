@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
-	"strings"
-
+	"one-api/common/ctxkey"
 	"one-api/common/render"
+	"strings"
 
 	"one-api/common"
 	"one-api/common/helper"
@@ -37,9 +37,7 @@ func ConvertRequest(request model.GeneralOpenAIRequest) *ChatRequest {
 		enableSearch = true
 		aliModel = strings.TrimSuffix(aliModel, EnableSearchModelSuffix)
 	}
-	if request.TopP >= 1 {
-		request.TopP = 0.9999
-	}
+	request.TopP = helper.Float64PtrMax(request.TopP, 0.9999)
 	return &ChatRequest{
 		Model: aliModel,
 		Input: Input{
@@ -61,7 +59,7 @@ func ConvertRequest(request model.GeneralOpenAIRequest) *ChatRequest {
 
 func ConvertEmbeddingRequest(request model.GeneralOpenAIRequest) *EmbeddingRequest {
 	return &EmbeddingRequest{
-		Model: "text-embedding-v1",
+		Model: request.Model,
 		Input: struct {
 			Texts []string `json:"texts"`
 		}{
@@ -104,8 +102,9 @@ func EmbeddingHandler(c *gin.Context, resp *http.Response) (*model.ErrorWithStat
 			StatusCode: resp.StatusCode,
 		}, nil
 	}
-
+	requestModel := c.GetString(ctxkey.RequestModel)
 	fullTextResponse := embeddingResponseAli2OpenAI(&aliResponse)
+	fullTextResponse.Model = requestModel
 	jsonResponse, err := json.Marshal(fullTextResponse)
 	if err != nil {
 		return openai.ErrorWrapper(err, "marshal_response_body_failed", http.StatusInternalServerError), nil

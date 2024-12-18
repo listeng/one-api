@@ -14,6 +14,8 @@ import (
 	"one-api/relay/adaptor/openai"
 	relaymodel "one-api/relay/model"
 
+	"one-api/relay/constant/role"
+
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -93,7 +95,7 @@ func preConsumeQuota(ctx context.Context, textRequest *relaymodel.GeneralOpenAIR
 	return preConsumedQuota, nil
 }
 
-func postConsumeQuota(ctx context.Context, usage *relaymodel.Usage, meta *meta.Meta, textRequest *relaymodel.GeneralOpenAIRequest, ratio float64, preConsumedQuota int64, modelRatio float64, groupRatio float64) {
+func postConsumeQuota(ctx context.Context, usage *relaymodel.Usage, meta *meta.Meta, textRequest *relaymodel.GeneralOpenAIRequest, ratio float64, preConsumedQuota int64, modelRatio float64, groupRatio float64, systemPromptReset bool) {
 	if usage == nil {
 		logger.Error(ctx, "usage is nil, which is unexpected")
 		return
@@ -125,12 +127,15 @@ func postConsumeQuota(ctx context.Context, usage *relaymodel.Usage, meta *meta.M
 	jsonBytes, err := json.Marshal(textRequest.Messages)
 	if err != nil {
 		fmt.Println("Error marshalling to JSON:", err)
-		return
+	} else {
+		logger.Info(ctx, fmt.Sprintf("UserId: %d, Messages: %s", meta.UserId, string(jsonBytes)))
 	}
 
-	logger.Info(ctx, fmt.Sprintf("UserId: %d, Messages: %s", meta.UserId, string(jsonBytes)))
-
-	logContent := fmt.Sprintf("模型倍率 %.2f，分组倍率 %.2f，补全倍率 %.2f", modelRatio, groupRatio, completionRatio)
+	var extraLog string
+	if systemPromptReset {
+		extraLog = " （注意系统提示词已被重置）"
+	}
+	logContent := fmt.Sprintf("模型倍率 %.2f，分组倍率 %.2f，补全倍率 %.2f%s", modelRatio, groupRatio, completionRatio, extraLog)
 	model.RecordConsumeLog(ctx, meta.UserId, meta.ChannelId, promptTokens, completionTokens, textRequest.Model, meta.TokenName, quota, logContent)
 	model.UpdateUserUsedQuotaAndRequestCount(meta.UserId, quota)
 	model.UpdateChannelUsedQuota(meta.ChannelId, quota)
@@ -165,4 +170,24 @@ func isErrorHappened(meta *meta.Meta, resp *http.Response) bool {
 		return true
 	}
 	return false
+}
+
+func setSystemPrompt(ctx context.Context, request *relaymodel.GeneralOpenAIRequest, prompt string) (reset bool) {
+	if prompt == "" {
+		return false
+	}
+	if len(request.Messages) == 0 {
+		return false
+	}
+	if request.Messages[0].Role == role.System {
+		request.Messages[0].Content = prompt
+		logger.Infof(ctx, "rewrite system prompt")
+		return true
+	}
+	request.Messages = append([]relaymodel.Message{{
+		Role:    role.System,
+		Content: prompt,
+	}}, request.Messages...)
+	logger.Infof(ctx, "add system prompt")
+	return true
 }
