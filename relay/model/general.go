@@ -63,8 +63,14 @@ type GeneralOpenAIRequest struct {
 	Size    string  `json:"size,omitempty"`
 	Style   *string `json:"style,omitempty"`
 	// Others
-	Instruction string `json:"instruction,omitempty"`
-	NumCtx      int    `json:"num_ctx,omitempty"`
+	Instruction string    `json:"instruction,omitempty"`
+	NumCtx      int       `json:"num_ctx,omitempty"`
+	Thinking    *Thinking `json:"thinking,omitempty"`
+}
+
+type Thinking struct {
+	Type         string `json:"type"`
+	BudgetTokens int    `json:"budget_tokens" binding:"omitempty,min=1024"`
 }
 
 func (r GeneralOpenAIRequest) ParseInput() []string {
