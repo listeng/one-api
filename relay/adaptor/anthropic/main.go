@@ -42,7 +42,7 @@ func stopReasonClaude2OpenAI(reason *string) string {
 
 // isModelSupportThinking is used to check if the model supports extended thinking
 func isModelSupportThinking(model string) bool {
-	if strings.Contains(model, "claude-3-7-sonnet") {
+	if strings.Contains(model, "claude-3-7-sonnet") || strings.Contains(model, "claude-sonnet-4") {
 		return true
 	}
 
@@ -446,6 +446,6 @@ func Handler(c *gin.Context, resp *http.Response, promptTokens int, modelName st
 	}
 	c.Writer.Header().Set("Content-Type", "application/json")
 	c.Writer.WriteHeader(resp.StatusCode)
-	_, err = c.Writer.Write(jsonResponse)
+	c.Writer.Write(jsonResponse)
 	return nil, &usage
 }

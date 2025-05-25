@@ -23,6 +23,7 @@ var CrossRegionInferences = []string{
 	"us.anthropic.claude-3-5-sonnet-20240620-v1:0",
 	"us.anthropic.claude-3-5-sonnet-20241022-v2:0",
 	"us.anthropic.claude-3-7-sonnet-20250219-v1:0",
+	"us.anthropic.claude-sonnet-4-20250514-v1:0",
 	"us.anthropic.claude-3-haiku-20240307-v1:0",
 	"us.anthropic.claude-3-opus-20240229-v1:0",
 	"us.anthropic.claude-3-sonnet-20240229-v1:0",
