@@ -138,6 +138,20 @@ export default function ChannelTableRow({
             </Label>
           )}
         </TableCell>
+        <TableCell>
+          {(() => {
+            switch (item.model_type) {
+              case 1:
+                return <Label color="primary" variant="outlined">语言模型</Label>;
+              case 2:
+                return <Label color="success" variant="outlined">嵌入模型</Label>;
+              case 3:
+                return <Label color="warning" variant="outlined">重排模型</Label>;
+              default:
+                return <Label color="default" variant="outlined">未知</Label>;
+            }
+          })()}
+        </TableCell>
 
         <TableCell>
           <Tooltip

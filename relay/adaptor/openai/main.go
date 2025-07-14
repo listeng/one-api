@@ -150,3 +150,55 @@ func Handler(c *gin.Context, resp *http.Response, promptTokens int, modelName st
 	}
 	return nil, &textResponse.Usage
 }
+
+func RerankHandler(c *gin.Context, resp *http.Response) (*model.ErrorWithStatusCode, *model.Usage) {
+	var openAIResponse model.RerankResponse
+	responseBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return ErrorWrapper(err, "read_response_body_failed", http.StatusInternalServerError), nil
+	}
+	err = resp.Body.Close()
+	if err != nil {
+		return ErrorWrapper(err, "close_response_body_failed", http.StatusInternalServerError), nil
+	}
+	err = json.Unmarshal(responseBody, &openAIResponse)
+	if err != nil {
+		return ErrorWrapper(err, "unmarshal_response_body_failed", http.StatusInternalServerError), nil
+	}
+
+	// Convert to the new format
+	newResponse := rerankResponseOpenAI2NewFormat(&openAIResponse)
+	jsonResponse, err := json.Marshal(newResponse)
+	if err != nil {
+		return ErrorWrapper(err, "marshal_response_body_failed", http.StatusInternalServerError), nil
+	}
+
+	c.Writer.Header().Set("Content-Type", "application/json")
+	c.Writer.WriteHeader(resp.StatusCode)
+	_, err = c.Writer.Write(jsonResponse)
+
+	// Use the usage from the response if available, otherwise create a minimal one
+	var usage *model.Usage
+	if openAIResponse.Usage != nil && openAIResponse.Usage.TotalTokens > 0 {
+		usage = openAIResponse.Usage
+	} else if openAIResponse.Tokens != nil {
+		// Convert tokens to usage format
+		usage = &model.Usage{
+			PromptTokens:     openAIResponse.Tokens.InputTokens,
+			CompletionTokens: openAIResponse.Tokens.OutputTokens,
+			TotalTokens:      openAIResponse.Tokens.InputTokens + openAIResponse.Tokens.OutputTokens,
+		}
+	} else {
+		usage = &model.Usage{
+			PromptTokens:     1, // Minimal token count for rerank
+			CompletionTokens: 0,
+			TotalTokens:      1,
+		}
+	}
+	return nil, usage
+}
+
+func rerankResponseOpenAI2NewFormat(response *model.RerankResponse) *model.RerankResponse {
+	// The response is already in the new format, just return it
+	return response
+}

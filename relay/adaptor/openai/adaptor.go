@@ -86,6 +86,22 @@ func (a *Adaptor) ConvertRequest(c *gin.Context, relayMode int, request *model.G
 	return request, nil
 }
 
+func (a *Adaptor) ConvertRerankRequest(rerankRequest *model.RerankRequest) (*RerankRequest, error) {
+	if rerankRequest == nil {
+		return nil, errors.New("rerank request is nil")
+	}
+
+	return &RerankRequest{
+		Model:           rerankRequest.Model,
+		Query:           rerankRequest.Query,
+		Documents:       rerankRequest.Documents,
+		TopN:            rerankRequest.TopN,
+		ReturnDocuments: rerankRequest.ReturnDocuments,
+		ScoreThreshold:  rerankRequest.ScoreThreshold,
+		User:            rerankRequest.User,
+	}, nil
+}
+
 func (a *Adaptor) ConvertImageRequest(request *model.ImageRequest) (any, error) {
 	if request == nil {
 		return nil, errors.New("request is nil")
@@ -112,6 +128,8 @@ func (a *Adaptor) DoResponse(c *gin.Context, resp *http.Response, meta *meta.Met
 		switch meta.Mode {
 		case relaymode.ImagesGenerations:
 			err, _ = ImageHandler(c, resp)
+		case relaymode.Rerank:
+			err, usage = RerankHandler(c, resp)
 		default:
 			err, usage = Handler(c, resp, meta.PromptTokens, meta.ActualModelName)
 		}

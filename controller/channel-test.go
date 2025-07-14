@@ -31,28 +31,72 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func buildTestRequest(model string) *relaymodel.GeneralOpenAIRequest {
-	if model == "" {
-		model = "gpt-3.5-turbo"
+func buildTestRequest(modelName string, modelType int) *relaymodel.GeneralOpenAIRequest {
+	if modelName == "" {
+		switch modelType {
+		case model.ModelTypeEmbedding:
+			modelName = "text-embedding-ada-002"
+		case model.ModelTypeRerank:
+			modelName = "rerank-english-v2.0"
+		default: // ModelTypeLanguage
+			modelName = "gpt-3.5-turbo"
+		}
 	}
-	testRequest := &relaymodel.GeneralOpenAIRequest{
-		MaxTokens: 2,
-		Model:     model,
+
+	switch modelType {
+	case model.ModelTypeEmbedding:
+		// 构建嵌入模型测试请求
+		testRequest := &relaymodel.GeneralOpenAIRequest{
+			Model: modelName,
+		}
+		testRequest.Input = []string{"test"}
+		return testRequest
+	case model.ModelTypeRerank:
+		// 构建重排模型测试请求
+		testRequest := &relaymodel.GeneralOpenAIRequest{
+			Model:     modelName,
+			Query:     "test query",
+			Documents: []string{"test document"},
+		}
+		return testRequest
+	default: // ModelTypeLanguage
+		// 构建语言模型测试请求
+		testRequest := &relaymodel.GeneralOpenAIRequest{
+			MaxTokens: 2,
+			Model:     modelName,
+		}
+		testMessage := relaymodel.Message{
+			Role:    "user",
+			Content: "hi",
+		}
+		testRequest.Messages = append(testRequest.Messages, testMessage)
+		return testRequest
 	}
-	testMessage := relaymodel.Message{
-		Role:    "user",
-		Content: "hi",
-	}
-	testRequest.Messages = append(testRequest.Messages, testMessage)
-	return testRequest
 }
 
 func testChannel(channel *model.Channel, request *relaymodel.GeneralOpenAIRequest) (err error, openaiErr *relaymodel.Error) {
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
+
+	// 根据模型类型决定测试接口
+	var testPath string
+	var relayMode int
+
+	switch channel.ModelType {
+	case model.ModelTypeEmbedding:
+		testPath = "/v1/embeddings"
+		relayMode = relaymode.Embeddings
+	case model.ModelTypeRerank:
+		testPath = "/v1/rerank"
+		relayMode = relaymode.Rerank
+	default: // ModelTypeLanguage
+		testPath = "/v1/chat/completions"
+		relayMode = relaymode.ChatCompletions
+	}
+
 	c.Request = &http.Request{
 		Method: "POST",
-		URL:    &url.URL{Path: "/v1/chat/completions"},
+		URL:    &url.URL{Path: testPath},
 		Body:   nil,
 		Header: make(http.Header),
 	}
@@ -83,7 +127,7 @@ func testChannel(channel *model.Channel, request *relaymodel.GeneralOpenAIReques
 	}
 	meta.OriginModelName, meta.ActualModelName = request.Model, modelName
 	request.Model = modelName
-	convertedRequest, err := adaptor.ConvertRequest(c, relaymode.ChatCompletions, request)
+	convertedRequest, err := adaptor.ConvertRequest(c, relayMode, request)
 	if err != nil {
 		return err, nil
 	}
@@ -136,8 +180,8 @@ func TestChannel(c *gin.Context) {
 		})
 		return
 	}
-	model := c.Query("model")
-	testRequest := buildTestRequest(model)
+	modelName := c.Query("model")
+	testRequest := buildTestRequest(modelName, channel.ModelType)
 	tik := time.Now()
 	err, _ = testChannel(channel, testRequest)
 	tok := time.Now()
@@ -152,7 +196,7 @@ func TestChannel(c *gin.Context) {
 			"success": false,
 			"message": err.Error(),
 			"time":    consumedTime,
-			"model":   model,
+			"model":   modelName,
 		})
 		return
 	}
@@ -160,7 +204,7 @@ func TestChannel(c *gin.Context) {
 		"success": true,
 		"message": "",
 		"time":    consumedTime,
-		"model":   model,
+		"model":   modelName,
 	})
 	return
 }
@@ -191,7 +235,7 @@ func testChannels(notify bool, scope string) error {
 		for _, channel := range channels {
 			isChannelEnabled := channel.Status == model.ChannelStatusEnabled
 			tik := time.Now()
-			testRequest := buildTestRequest("")
+			testRequest := buildTestRequest("", channel.ModelType)
 			err, openaiErr := testChannel(channel, testRequest)
 			tok := time.Now()
 			milliseconds := tok.Sub(tik).Milliseconds()

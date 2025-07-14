@@ -46,7 +46,8 @@ const EditChannel = (props) => {
         system_prompt: '',
         models: [],
         auto_ban: 1,
-        groups: ['default']
+        groups: ['default'],
+        model_type: 1 // 模型类型：1-语言模型，2-嵌入模型，3-重排模型
     };
     const [batch, setBatch] = useState(false);
     const [autoBan, setAutoBan] = useState(true);
@@ -143,6 +144,7 @@ const EditChannel = (props) => {
             if (data.model_mapping !== '') {
                 data.model_mapping = JSON.stringify(JSON.parse(data.model_mapping), null, 2);
             }
+            data.model_type = data.model_type ?? 1; // 设置默认值
             setInputs(data);
             if (data.auto_ban === 0) {
                 setAutoBan(false);
@@ -316,6 +318,21 @@ const EditChannel = (props) => {
                       onChange={value => handleInputChange('type', value)}
                       style={{ width: '50%' }}
                     />
+                    <div style={{ marginTop: 10 }}>
+                        <Typography.Text strong>模型类型：</Typography.Text>
+                    </div>
+                    <Select
+                      name='model_type'
+                      required
+                      optionList={[
+                        { label: '语言模型', value: 1 },
+                        { label: '嵌入模型', value: 2 },
+                        { label: '重排模型', value: 3 }
+                      ]}
+                      value={inputs.model_type}
+                      onChange={value => handleInputChange('model_type', value)}
+                      style={{ width: '50%' }}
+                    />
                     {
                       inputs.type === 3 && (
                         <>
@@ -325,7 +342,7 @@ const EditChannel = (props) => {
                                         注意，<strong>模型部署名称必须和模型名称保持一致</strong>，因为 One API 会把请求体中的
                                         model
                                         参数替换为你的部署名称（模型名称中的点会被剔除），<a target='_blank'
-                                                                                          href='https://github.com/songquanpeng/one-api/issues/133?notification_referrer_id=NT_kwDOAmJSYrM2NjIwMzI3NDgyOjM5OTk4MDUw#issuecomment-1571602271'>图片演示</a>。
+                                                                                          href='https://github.com/songquanpeng/one-api/issues/133?notification_referrer_id=NT_kwDOAmJSYrM2NjIwMzI3NDgyOjM5OTk4MDUw#issuecomment-1571602271' rel="noreferrer">图片演示</a>。
                                     </>
                                 }>
                                 </Banner>

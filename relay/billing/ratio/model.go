@@ -21,58 +21,59 @@ const (
 // 1 === ￥0.014 / 1k tokens
 var ModelRatio = map[string]float64{
 	// https://openai.com/pricing
-	"gpt-4":                   15,
-	"gpt-4-0314":              15,
-	"gpt-4-0613":              15,
-	"gpt-4-32k":               30,
-	"gpt-4-32k-0314":          30,
-	"gpt-4-32k-0613":          30,
-	"gpt-4-1106-preview":      5,     // $0.01 / 1K tokens
-	"gpt-4-0125-preview":      5,     // $0.01 / 1K tokens
-	"gpt-4-turbo-preview":     5,     // $0.01 / 1K tokens
-	"gpt-4-turbo":             5,     // $0.01 / 1K tokens
-	"gpt-4-turbo-2024-04-09":  5,     // $0.01 / 1K tokens
-	"gpt-4o":                  2.5,   // $0.005 / 1K tokens
-	"chatgpt-4o-latest":       2.5,   // $0.005 / 1K tokens
-	"gpt-4o-2024-05-13":       2.5,   // $0.005 / 1K tokens
-	"gpt-4o-2024-08-06":       1.25,  // $0.0025 / 1K tokens
-	"gpt-4o-mini":             0.075, // $0.00015 / 1K tokens
-	"gpt-4o-mini-2024-07-18":  0.075, // $0.00015 / 1K tokens
-	"gpt-4-vision-preview":    5,     // $0.01 / 1K tokens
-	"gpt-3.5-turbo":           0.25,  // $0.0005 / 1K tokens
-	"gpt-3.5-turbo-0301":      0.75,
-	"gpt-3.5-turbo-0613":      0.75,
-	"gpt-3.5-turbo-16k":       1.5, // $0.003 / 1K tokens
-	"gpt-3.5-turbo-16k-0613":  1.5,
-	"gpt-3.5-turbo-instruct":  0.75, // $0.0015 / 1K tokens
-	"gpt-3.5-turbo-1106":      0.5,  // $0.001 / 1K tokens
-	"gpt-3.5-turbo-0125":      0.25, // $0.0005 / 1K tokens
-	"davinci-002":             1,    // $0.002 / 1K tokens
-	"babbage-002":             0.2,  // $0.0004 / 1K tokens
-	"text-ada-001":            0.2,
-	"text-babbage-001":        0.25,
-	"text-curie-001":          1,
-	"text-davinci-002":        10,
-	"text-davinci-003":        10,
-	"text-davinci-edit-001":   10,
-	"code-davinci-edit-001":   10,
-	"whisper-1":               15,  // $0.006 / minute -> $0.006 / 150 words -> $0.006 / 200 tokens -> $0.03 / 1k tokens
-	"tts-1":                   7.5, // $0.015 / 1K characters
-	"tts-1-1106":              7.5,
-	"tts-1-hd":                15, // $0.030 / 1K characters
-	"tts-1-hd-1106":           15,
-	"davinci":                 10,
-	"curie":                   10,
-	"babbage":                 10,
-	"ada":                     10,
-	"text-embedding-ada-002":  0.05,
-	"text-embedding-3-small":  0.01,
-	"text-embedding-3-large":  0.065,
-	"text-search-ada-doc-001": 10,
-	"text-moderation-stable":  0.1,
-	"text-moderation-latest":  0.1,
-	"dall-e-2":                0.02 * USD, // $0.016 - $0.020 / image
-	"dall-e-3":                0.04 * USD, // $0.040 - $0.120 / image
+	"gpt-4":                    15,
+	"gpt-4-0314":               15,
+	"gpt-4-0613":               15,
+	"gpt-4-32k":                30,
+	"gpt-4-32k-0314":           30,
+	"gpt-4-32k-0613":           30,
+	"gpt-4-1106-preview":       5,     // $0.01 / 1K tokens
+	"gpt-4-0125-preview":       5,     // $0.01 / 1K tokens
+	"gpt-4-turbo-preview":      5,     // $0.01 / 1K tokens
+	"gpt-4-turbo":              5,     // $0.01 / 1K tokens
+	"gpt-4-turbo-2024-04-09":   5,     // $0.01 / 1K tokens
+	"gpt-4o":                   2.5,   // $0.005 / 1K tokens
+	"chatgpt-4o-latest":        2.5,   // $0.005 / 1K tokens
+	"gpt-4o-2024-05-13":        2.5,   // $0.005 / 1K tokens
+	"gpt-4o-2024-08-06":        1.25,  // $0.0025 / 1K tokens
+	"gpt-4o-mini":              0.075, // $0.00015 / 1K tokens
+	"gpt-4o-mini-2024-07-18":   0.075, // $0.00015 / 1K tokens
+	"gpt-4-vision-preview":     5,     // $0.01 / 1K tokens
+	"gpt-3.5-turbo":            0.25,  // $0.0005 / 1K tokens
+	"gpt-3.5-turbo-0301":       0.75,
+	"gpt-3.5-turbo-0613":       0.75,
+	"gpt-3.5-turbo-16k":        1.5, // $0.003 / 1K tokens
+	"gpt-3.5-turbo-16k-0613":   1.5,
+	"gpt-3.5-turbo-instruct":   0.75, // $0.0015 / 1K tokens
+	"gpt-3.5-turbo-1106":       0.5,  // $0.001 / 1K tokens
+	"gpt-3.5-turbo-0125":       0.25, // $0.0005 / 1K tokens
+	"davinci-002":              1,    // $0.002 / 1K tokens
+	"babbage-002":              0.2,  // $0.0004 / 1K tokens
+	"text-ada-001":             0.2,
+	"text-babbage-001":         0.25,
+	"text-curie-001":           1,
+	"text-davinci-002":         10,
+	"text-davinci-003":         10,
+	"text-davinci-edit-001":    10,
+	"code-davinci-edit-001":    10,
+	"whisper-1":                15,  // $0.006 / minute -> $0.006 / 150 words -> $0.006 / 200 tokens -> $0.03 / 1k tokens
+	"tts-1":                    7.5, // $0.015 / 1K characters
+	"tts-1-1106":               7.5,
+	"tts-1-hd":                 15, // $0.030 / 1K characters
+	"tts-1-hd-1106":            15,
+	"davinci":                  10,
+	"curie":                    10,
+	"babbage":                  10,
+	"ada":                      10,
+	"text-embedding-ada-002":   0.05,
+	"text-embedding-3-small":   0.01,
+	"text-embedding-3-large":   0.065,
+	"text-embedding-rerank-v1": 0.1, // $0.0002 / 1K tokens
+	"text-search-ada-doc-001":  10,
+	"text-moderation-stable":   0.1,
+	"text-moderation-latest":   0.1,
+	"dall-e-2":                 0.02 * USD, // $0.016 - $0.020 / image
+	"dall-e-3":                 0.04 * USD, // $0.040 - $0.120 / image
 	// https://www.anthropic.com/api#pricing
 	"claude-instant-1.2":         0.8 / 1000 * USD,
 	"claude-2.0":                 8.0 / 1000 * USD,
@@ -199,12 +200,14 @@ var ModelRatio = map[string]float64{
 	"llama3-8b-8192(33)":  0.0003 / 0.002,  // $0.0003 / 1K tokens
 	"llama3-70b-8192(33)": 0.00265 / 0.002, // $0.00265 / 1K tokens
 	// https://cohere.com/pricing
-	"command":               0.5,
-	"command-nightly":       0.5,
-	"command-light":         0.5,
-	"command-light-nightly": 0.5,
-	"command-r":             0.5 / 1000 * USD,
-	"command-r-plus":        3.0 / 1000 * USD,
+	"command":                  0.5,
+	"command-nightly":          0.5,
+	"command-light":            0.5,
+	"command-light-nightly":    0.5,
+	"command-r":                0.5 / 1000 * USD,
+	"command-r-plus":           3.0 / 1000 * USD,
+	"rerank-english-v2.0":      0.1 / 1000 * USD,
+	"rerank-multilingual-v2.0": 0.1 / 1000 * USD,
 	// https://platform.deepseek.com/api-docs/pricing/
 	"deepseek-chat":  1.0 / 1000 * RMB,
 	"deepseek-coder": 1.0 / 1000 * RMB,

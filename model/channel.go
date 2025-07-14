@@ -17,6 +17,13 @@ const (
 	ChannelStatusAutoDisabled     = 3
 )
 
+// 模型类型常量
+const (
+	ModelTypeLanguage  = 1 // 语言模型
+	ModelTypeEmbedding = 2 // 嵌入模型
+	ModelTypeRerank    = 3 // 重排模型
+)
+
 type Channel struct {
 	Id                 int     `json:"id"`
 	Type               int     `json:"type" gorm:"default:0"`
@@ -38,6 +45,7 @@ type Channel struct {
 	Priority           *int64  `json:"priority" gorm:"bigint;default:0"`
 	Config             string  `json:"config"`
 	SystemPrompt       *string `json:"system_prompt" gorm:"type:text"`
+	ModelType          int     `json:"model_type" gorm:"default:1"` // 模型类型：1-语言模型，2-嵌入模型，3-重排模型
 }
 
 type ChannelConfig struct {

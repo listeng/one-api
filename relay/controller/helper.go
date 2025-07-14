@@ -60,7 +60,7 @@ func getPromptTokens(textRequest *relaymodel.GeneralOpenAIRequest, relayMode int
 
 func getPreConsumedQuota(textRequest *relaymodel.GeneralOpenAIRequest, promptTokens int, ratio float64) int64 {
 	preConsumedTokens := config.PreConsumedQuota + int64(promptTokens)
-	if textRequest.MaxTokens != 0 {
+	if textRequest != nil && textRequest.MaxTokens != 0 {
 		preConsumedTokens += int64(textRequest.MaxTokens)
 	}
 	return int64(float64(preConsumedTokens) * ratio)
@@ -101,7 +101,13 @@ func postConsumeQuota(ctx context.Context, usage *relaymodel.Usage, meta *meta.M
 		return
 	}
 	var quota int64
-	completionRatio := billingratio.GetCompletionRatio(textRequest.Model, meta.ChannelType)
+	var modelName string
+	if textRequest != nil {
+		modelName = textRequest.Model
+	} else {
+		modelName = meta.ActualModelName
+	}
+	completionRatio := billingratio.GetCompletionRatio(modelName, meta.ChannelType)
 	promptTokens := usage.PromptTokens
 	completionTokens := usage.CompletionTokens
 	quota = int64(math.Ceil((float64(promptTokens) + float64(completionTokens)*completionRatio) * ratio))
@@ -124,11 +130,13 @@ func postConsumeQuota(ctx context.Context, usage *relaymodel.Usage, meta *meta.M
 		logger.Error(ctx, "error update user quota cache: "+err.Error())
 	}
 
-	jsonBytes, err := json.Marshal(textRequest.Messages)
-	if err != nil {
-		fmt.Println("Error marshalling to JSON:", err)
-	} else {
-		logger.Info(ctx, fmt.Sprintf("UserId: %d, Messages: %s", meta.UserId, string(jsonBytes)))
+	if textRequest != nil && textRequest.Messages != nil {
+		jsonBytes, err := json.Marshal(textRequest.Messages)
+		if err != nil {
+			fmt.Println("Error marshalling to JSON:", err)
+		} else {
+			logger.Info(ctx, fmt.Sprintf("UserId: %d, Messages: %s", meta.UserId, string(jsonBytes)))
+		}
 	}
 
 	var extraLog string
@@ -136,7 +144,7 @@ func postConsumeQuota(ctx context.Context, usage *relaymodel.Usage, meta *meta.M
 		extraLog = " （注意系统提示词已被重置）"
 	}
 	logContent := fmt.Sprintf("模型倍率 %.2f，分组倍率 %.2f，补全倍率 %.2f%s", modelRatio, groupRatio, completionRatio, extraLog)
-	model.RecordConsumeLog(ctx, meta.UserId, meta.ChannelId, promptTokens, completionTokens, textRequest.Model, meta.TokenName, quota, logContent)
+	model.RecordConsumeLog(ctx, meta.UserId, meta.ChannelId, promptTokens, completionTokens, modelName, meta.TokenName, quota, logContent)
 	model.UpdateUserUsedQuotaAndRequestCount(meta.UserId, quota)
 	model.UpdateChannelUsedQuota(meta.ChannelId, quota)
 }

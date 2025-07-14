@@ -62,6 +62,12 @@ type GeneralOpenAIRequest struct {
 	Quality *string `json:"quality,omitempty"`
 	Size    string  `json:"size,omitempty"`
 	Style   *string `json:"style,omitempty"`
+	// https://platform.openai.com/docs/api-reference/rerank
+	Query           string   `json:"query,omitempty"`
+	Documents       []string `json:"documents,omitempty"`
+	TopN            *int     `json:"top_n,omitempty"`
+	ReturnDocuments *bool    `json:"return_documents,omitempty"`
+	ScoreThreshold  *float64 `json:"score_threshold,omitempty"`
 	// Others
 	Instruction string    `json:"instruction,omitempty"`
 	NumCtx      int       `json:"num_ctx,omitempty"`
@@ -90,4 +96,52 @@ func (r GeneralOpenAIRequest) ParseInput() []string {
 		}
 	}
 	return input
+}
+
+// RerankRequest represents a rerank request
+type RerankRequest struct {
+	Model           string   `json:"model"`
+	Query           string   `json:"query"`
+	Documents       []string `json:"documents"`
+	TopN            *int     `json:"top_n,omitempty"`
+	ReturnDocuments *bool    `json:"return_documents,omitempty"`
+	ScoreThreshold  *float64 `json:"score_threshold,omitempty"`
+	User            *string  `json:"user,omitempty"`
+}
+
+// RerankDocument represents a single rerank document
+type RerankDocument struct {
+	Index int     `json:"index"`
+	Text  string  `json:"text"`
+	Score float64 `json:"score"`
+}
+
+// RerankDocumentResult represents a single rerank result with document structure
+type RerankDocumentResult struct {
+	Index    int `json:"index"`
+	Document struct {
+		Text string `json:"text"`
+	} `json:"document"`
+	RelevanceScore float64 `json:"relevance_score"`
+}
+
+// RerankResult represents a rerank result
+type RerankResult struct {
+	Model string           `json:"model"`
+	Docs  []RerankDocument `json:"docs"`
+}
+
+// RerankTokens represents tokens information in rerank response
+type RerankTokens struct {
+	InputTokens  int `json:"input_tokens"`
+	OutputTokens int `json:"output_tokens"`
+}
+
+// RerankResponse represents the new rerank response format
+type RerankResponse struct {
+	Id      string                 `json:"id"`
+	Model   string                 `json:"model"`
+	Usage   *Usage                 `json:"usage,omitempty"`
+	Tokens  *RerankTokens          `json:"tokens,omitempty"`
+	Results []RerankDocumentResult `json:"results"`
 }

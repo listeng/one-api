@@ -41,6 +41,19 @@ function renderType(type) {
   return <Tag size="large" color={type2label[type]?.color}>{type2label[type]?.text}</Tag>;
 }
 
+function renderModelType(modelType) {
+  switch (modelType) {
+    case 1:
+      return <Tag size="large" color="blue">语言模型</Tag>;
+    case 2:
+      return <Tag size="large" color="green">嵌入模型</Tag>;
+    case 3:
+      return <Tag size="large" color="orange">重排模型</Tag>;
+    default:
+      return <Tag size="large" color="grey">未知</Tag>;
+  }
+}
+
 const ChannelsTable = () => {
   const columns = [
     // {
@@ -80,6 +93,17 @@ const ChannelsTable = () => {
         return (
           <div>
             {renderType(text)}
+          </div>
+        );
+      }
+    },
+    {
+      title: '模型类型',
+      dataIndex: 'model_type',
+      render: (text, record, index) => {
+        return (
+          <div>
+            {renderModelType(text)}
           </div>
         );
       }

@@ -40,6 +40,7 @@ const validationSchema = Yup.object().shape({
   is_edit: Yup.boolean(),
   name: Yup.string().required('名称 不能为空'),
   type: Yup.number().required('渠道 不能为空'),
+  model_type: Yup.number().required('模型类型 不能为空'),
   key: Yup.string().when(['is_edit', 'type'], {
     is: (is_edit, type) => !is_edit && type !== 33,
     then: Yup.string().required('密钥 不能为空')
@@ -242,6 +243,7 @@ const EditModal = ({ open, channelId, onCancel, onOk }) => {
       }
 
       data.base_url = data.base_url ?? '';
+      data.model_type = data.model_type ?? 1; // 设置默认值
       data.is_edit = true;
       initChannel(data.type);
       setInitialInput(data);
@@ -322,6 +324,36 @@ const EditModal = ({ open, channelId, onCancel, onOk }) => {
                   </FormHelperText>
                 ) : (
                   <FormHelperText id="helper-tex-channel-type-label"> {inputPrompt.type} </FormHelperText>
+                )}
+              </FormControl>
+
+              <FormControl fullWidth error={Boolean(touched.model_type && errors.model_type)} sx={{ ...theme.typography.otherInput }}>
+                <InputLabel htmlFor="channel-model-type-label">{inputLabel.model_type}</InputLabel>
+                <Select
+                  id="channel-model-type-label"
+                  label={inputLabel.model_type}
+                  value={values.model_type}
+                  name="model_type"
+                  onBlur={handleBlur}
+                  onChange={handleChange}
+                  MenuProps={{
+                    PaperProps: {
+                      style: {
+                        maxHeight: 200
+                      }
+                    }
+                  }}
+                >
+                  <MenuItem value={1}>语言模型</MenuItem>
+                  <MenuItem value={2}>嵌入模型</MenuItem>
+                  <MenuItem value={3}>重排模型</MenuItem>
+                </Select>
+                {touched.model_type && errors.model_type ? (
+                  <FormHelperText error id="helper-tex-channel-model-type-label">
+                    {errors.model_type}
+                  </FormHelperText>
+                ) : (
+                  <FormHelperText id="helper-tex-channel-model-type-label"> {inputPrompt.model_type} </FormHelperText>
                 )}
               </FormControl>
 

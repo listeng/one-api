@@ -12,6 +12,8 @@ func GetByPath(path string) int {
 		relayMode = Embeddings
 	} else if strings.HasSuffix(path, "embeddings") {
 		relayMode = Embeddings
+	} else if strings.HasPrefix(path, "/v1/rerank") {
+		relayMode = Rerank
 	} else if strings.HasPrefix(path, "/v1/moderations") {
 		relayMode = Moderations
 	} else if strings.HasPrefix(path, "/v1/images/generations") {

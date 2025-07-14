@@ -2,6 +2,8 @@ package cohere
 
 import (
 	"bufio"
+	"crypto/rand"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -226,4 +228,65 @@ func Handler(c *gin.Context, resp *http.Response, promptTokens int, modelName st
 	c.Writer.WriteHeader(resp.StatusCode)
 	_, err = c.Writer.Write(jsonResponse)
 	return nil, &usage
+}
+
+func RerankHandler(c *gin.Context, resp *http.Response) (*model.ErrorWithStatusCode, *model.Usage) {
+	var cohereResponse RerankResponse
+	err := json.NewDecoder(resp.Body).Decode(&cohereResponse)
+	if err != nil {
+		return openai.ErrorWrapper(err, "unmarshal_response_body_failed", http.StatusInternalServerError), nil
+	}
+
+	err = resp.Body.Close()
+	if err != nil {
+		return openai.ErrorWrapper(err, "close_response_body_failed", http.StatusInternalServerError), nil
+	}
+
+	// Convert to the new format
+	newResponse := rerankResponseCohere2NewFormat(&cohereResponse)
+	jsonResponse, err := json.Marshal(newResponse)
+	if err != nil {
+		return openai.ErrorWrapper(err, "marshal_response_body_failed", http.StatusInternalServerError), nil
+	}
+
+	c.Writer.Header().Set("Content-Type", "application/json")
+	c.Writer.WriteHeader(resp.StatusCode)
+	_, err = c.Writer.Write(jsonResponse)
+
+	// Generate usage for rerank - typically rerank doesn't return usage, so we create a minimal one
+	usage := &model.Usage{
+		PromptTokens:     1, // Minimal token count for rerank
+		CompletionTokens: 0,
+		TotalTokens:      1,
+	}
+	return nil, usage
+}
+
+func rerankResponseCohere2NewFormat(response *RerankResponse) *model.RerankResponse {
+	// Generate a random ID
+	randomBytes := make([]byte, 16)
+	rand.Read(randomBytes)
+	randomID := hex.EncodeToString(randomBytes)
+
+	newResponse := model.RerankResponse{
+		Id:    fmt.Sprintf("rerank-%s", randomID),
+		Model: response.Model,
+		Usage: &model.Usage{
+			PromptTokens:     1,
+			CompletionTokens: 0,
+			TotalTokens:      1,
+		},
+		Results: make([]model.RerankDocumentResult, 0, len(response.Docs)),
+	}
+
+	for _, doc := range response.Docs {
+		result := model.RerankDocumentResult{
+			Index:          doc.Index,
+			RelevanceScore: doc.Score,
+		}
+		result.Document.Text = doc.Text
+		newResponse.Results = append(newResponse.Results, result)
+	}
+
+	return &newResponse
 }

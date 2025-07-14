@@ -45,7 +45,8 @@ const EditChannel = () => {
     model_mapping: '',
     system_prompt: '',
     models: [],
-    groups: ['default']
+    groups: ['default'],
+    model_type: 1 // 模型类型：1-语言模型，2-嵌入模型，3-重排模型
   };
   const [batch, setBatch] = useState(false);
   const [inputs, setInputs] = useState(originInputs);
@@ -95,6 +96,7 @@ const EditChannel = () => {
       if (data.model_mapping !== '') {
         data.model_mapping = JSON.stringify(JSON.parse(data.model_mapping), null, 2);
       }
+      data.model_type = data.model_type ?? 1; // 设置默认值
       setInputs(data);
       if (data.config !== '') {
         setConfig(JSON.parse(data.config));
@@ -242,13 +244,27 @@ const EditChannel = () => {
               onChange={handleInputChange}
             />
           </Form.Field>
+          <Form.Field>
+            <Form.Select
+              label='模型类型'
+              name='model_type'
+              required
+              options={[
+                { key: 1, text: '语言模型', value: 1 },
+                { key: 2, text: '嵌入模型', value: 2 },
+                { key: 3, text: '重排模型', value: 3 }
+              ]}
+              value={inputs.model_type}
+              onChange={handleInputChange}
+            />
+          </Form.Field>
           {
             inputs.type === 3 && (
               <>
                 <Message>
                   注意，<strong>模型部署名称必须和模型名称保持一致</strong>，因为 One API 会把请求体中的 model
                   参数替换为你的部署名称（模型名称中的点会被剔除），<a target='_blank'
-                                                                    href='https://github.com/songquanpeng/one-api/issues/133?notification_referrer_id=NT_kwDOAmJSYrM2NjIwMzI3NDgyOjM5OTk4MDUw#issuecomment-1571602271'>图片演示</a>。
+                                                                    href='https://github.com/songquanpeng/one-api/issues/133?notification_referrer_id=NT_kwDOAmJSYrM2NjIwMzI3NDgyOjM5OTk4MDUw#issuecomment-1571602271' rel="noreferrer">图片演示</a>。
                 </Message>
                 <Form.Field>
                   <Form.Input
@@ -367,7 +383,7 @@ const EditChannel = () => {
           {
             inputs.type === 40 && (
               <Message>
-                对于豆包而言，需要手动去 <a target="_blank" href="https://console.volcengine.com/ark/region:ark+cn-beijing/endpoint">模型推理页面</a> 创建推理接入点，以接入点名称作为模型名称，例如：`ep-20240608051426-tkxvl`。
+                对于豆包而言，需要手动去 <a target="_blank" href="https://console.volcengine.com/ark/region:ark+cn-beijing/endpoint" rel="noreferrer">模型推理页面</a> 创建推理接入点，以接入点名称作为模型名称，例如：`ep-20240608051426-tkxvl`。
               </Message>
             )
           }

@@ -27,13 +27,26 @@ let type2label = undefined;
 
 function renderType(type) {
   if (!type2label) {
-    type2label = new Map;
+    type2label = new Map();
     for (let i = 0; i < CHANNEL_OPTIONS.length; i++) {
       type2label[CHANNEL_OPTIONS[i].value] = CHANNEL_OPTIONS[i];
     }
     type2label[0] = { value: 0, text: '未知类型', color: 'grey' };
   }
   return <Label basic color={type2label[type]?.color}>{type2label[type] ? type2label[type].text : type}</Label>;
+}
+
+function renderModelType(modelType) {
+  switch (modelType) {
+    case 1:
+      return <Label basic color='blue'>语言模型</Label>;
+    case 2:
+      return <Label basic color='green'>嵌入模型</Label>;
+    case 3:
+      return <Label basic color='orange'>重排模型</Label>;
+    default:
+      return <Label basic color='grey'>未知</Label>;
+  }
 }
 
 function renderBalance(type, balance) {
@@ -424,6 +437,14 @@ const ChannelsTable = () => {
             <Table.HeaderCell
               style={{ cursor: 'pointer' }}
               onClick={() => {
+                sortChannel('model_type');
+              }}
+            >
+              模型类型
+            </Table.HeaderCell>
+            <Table.HeaderCell
+              style={{ cursor: 'pointer' }}
+              onClick={() => {
                 sortChannel('status');
               }}
             >
@@ -473,6 +494,7 @@ const ChannelsTable = () => {
                   <Table.Cell>{channel.name ? channel.name : '无'}</Table.Cell>
                   <Table.Cell>{renderGroup(channel.group)}</Table.Cell>
                   <Table.Cell>{renderType(channel.type)}</Table.Cell>
+                  <Table.Cell>{renderModelType(channel.model_type)}</Table.Cell>
                   <Table.Cell>{renderStatus(channel.status)}</Table.Cell>
                   <Table.Cell>
                     <Popup

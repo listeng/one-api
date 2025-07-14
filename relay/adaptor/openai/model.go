@@ -143,3 +143,27 @@ type CompletionsStreamResponse struct {
 		FinishReason string `json:"finish_reason"`
 	} `json:"choices"`
 }
+
+// RerankRequest represents an OpenAI rerank request
+type RerankRequest struct {
+	Model           string   `json:"model"`
+	Query           string   `json:"query"`
+	Documents       []string `json:"documents"`
+	TopN            *int     `json:"top_n,omitempty"`
+	ReturnDocuments *bool    `json:"return_documents,omitempty"`
+	ScoreThreshold  *float64 `json:"score_threshold,omitempty"`
+	User            *string  `json:"user,omitempty"`
+}
+
+// RerankDocument represents a single rerank document
+type RerankDocument struct {
+	Index int     `json:"index"`
+	Text  string  `json:"text"`
+	Score float64 `json:"score"`
+}
+
+// RerankResponse represents an OpenAI rerank response
+type RerankResponse struct {
+	Model string           `json:"model"`
+	Docs  []RerankDocument `json:"docs"`
+}
