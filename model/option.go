@@ -75,6 +75,8 @@ func InitOptionMap() {
 	config.OptionMap["QuotaPerUnit"] = strconv.FormatFloat(config.QuotaPerUnit, 'f', -1, 64)
 	config.OptionMap["RetryTimes"] = strconv.Itoa(config.RetryTimes)
 	config.OptionMap["Theme"] = config.Theme
+	config.OptionMap["RedemptionMenuEnabled"] = "true"
+	config.OptionMap["TopUpMenuEnabled"] = "true"
 	config.OptionMapRWMutex.Unlock()
 	loadOptionsFromDatabase()
 }
@@ -153,6 +155,10 @@ func updateOptionMap(key string, value string) (err error) {
 			config.DisplayInCurrencyEnabled = boolValue
 		case "DisplayTokenStatEnabled":
 			config.DisplayTokenStatEnabled = boolValue
+		case "RedemptionMenuEnabled":
+			config.RedemptionMenuEnabled = boolValue
+		case "TopUpMenuEnabled":
+			config.TopUpMenuEnabled = boolValue
 		}
 	}
 	switch key {

@@ -20,6 +20,8 @@ var ChatLink = ""
 var QuotaPerUnit = 500 * 1000.0 // $0.002 / 1K tokens
 var DisplayInCurrencyEnabled = true
 var DisplayTokenStatEnabled = true
+var RedemptionMenuEnabled = true
+var TopUpMenuEnabled = true
 
 // Any options with "Secret", "Token" in its key won't be return by GetOptions
 

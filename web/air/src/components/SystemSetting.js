@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Button, Divider, Form, Grid, Header, Modal, Message } from 'semantic-ui-react';
-import { API, removeTrailingSlash, showError } from '../helpers';
+import { API, removeTrailingSlash, showError, showSuccess } from '../helpers';
 
 const SystemSetting = () => {
   let [inputs, setInputs] = useState({
@@ -29,7 +29,9 @@ const SystemSetting = () => {
     TurnstileSecretKey: '',
     RegisterEnabled: '',
     EmailDomainRestrictionEnabled: '',
-    EmailDomainWhitelist: ''
+    EmailDomainWhitelist: '',
+    RedemptionMenuEnabled: '',
+    TopUpMenuEnabled: ''
   });
   const [originInputs, setOriginInputs] = useState({});
   let [loading, setLoading] = useState(false);
@@ -74,6 +76,8 @@ const SystemSetting = () => {
       case 'TurnstileCheckEnabled':
       case 'EmailDomainRestrictionEnabled':
       case 'RegisterEnabled':
+      case 'RedemptionMenuEnabled':
+      case 'TopUpMenuEnabled':
         value = inputs[key] === 'true' ? 'false' : 'true';
         break;
       default:
@@ -117,6 +121,26 @@ const SystemSetting = () => {
       name === 'EmailDomainWhitelist'
     ) {
       setInputs((inputs) => ({ ...inputs, [name]: value }));
+    } else if (name === 'RedemptionMenuEnabled' || name === 'TopUpMenuEnabled') {
+      // 立即保存菜单显示控制设置
+      const newValue = inputs[name] === 'true' ? 'false' : 'true';
+      setInputs((inputs) => ({ ...inputs, [name]: newValue }));
+      
+      // 立即调用后端API保存
+      const res = await API.put('/api/option/', {
+        key: name,
+        value: newValue
+      });
+      const { success, message } = res.data;
+      if (success) {
+        // 立即更新localStorage
+        localStorage.setItem(name, newValue);
+        showSuccess('设置已保存并立即生效！');
+      } else {
+        showError(message);
+        // 如果保存失败，恢复原状态
+        setInputs((inputs) => ({ ...inputs, [name]: inputs[name] === 'true' ? 'false' : 'true' }));
+      }
     } else {
       await updateOption(name, value);
     }
@@ -330,6 +354,18 @@ const SystemSetting = () => {
               name='TurnstileCheckEnabled'
               onChange={handleInputChange}
             />
+            <Form.Checkbox
+              checked={inputs.RedemptionMenuEnabled === 'true'}
+              label='启用兑换菜单'
+              name='RedemptionMenuEnabled'
+              onChange={handleInputChange}
+            />
+            <Form.Checkbox
+              checked={inputs.TopUpMenuEnabled === 'true'}
+              label='启用充值菜单'
+              name='TopUpMenuEnabled'
+              onChange={handleInputChange}
+            />
           </Form.Group>
           <Divider />
           <Header as='h3'>
@@ -432,10 +468,39 @@ const SystemSetting = () => {
           <Form.Button onClick={submitSMTP}>保存 SMTP 设置</Form.Button>
           <Divider />
           <Header as='h3'>
+            配置 CAS OSS
+          </Header>
+          <Message>
+            CAS callback URL 一般填{' '}
+            <code>{`${inputs.ServerAddress}/cas`}</code>
+          </Message>
+          <Form.Group widths={3}>
+            <Form.Input
+              label='Login URL'
+              name='LoginURL'
+              onChange={handleInputChange}
+              autoComplete='new-password'
+              value={inputs.CASLoginURL}
+              placeholder='输入IDP的登录地址'
+            />
+            <Form.Input
+              label='Callback URL'
+              name='CallbackURL'
+              onChange={handleInputChange}
+              autoComplete='new-password'
+              value={inputs.CASCallbackURL}
+              placeholder='输入登录之后的验证地址'
+            />
+          </Form.Group>
+          <Form.Button onClick={submitGitHubOAuth}>
+            保存 GitHub OAuth 设置
+          </Form.Button>
+          <Divider />
+          <Header as='h3'>
             配置 GitHub OAuth App
             <Header.Subheader>
               用以支持通过 GitHub 进行登录注册，
-              <a href='https://github.com/settings/developers' target='_blank'>
+              <a href='https://github.com/settings/developers' target='_blank' rel="noreferrer">
                 点击此处
               </a>
               管理你的 GitHub OAuth App
@@ -475,7 +540,7 @@ const SystemSetting = () => {
               用以支持通过微信进行登录注册，
               <a
                 href='https://github.com/songquanpeng/wechat-server'
-                target='_blank'
+                target='_blank' rel="noreferrer"
               >
                 点击此处
               </a>
@@ -519,7 +584,7 @@ const SystemSetting = () => {
               用以推送报警信息，
               <a
                 href='https://github.com/songquanpeng/message-pusher'
-                target='_blank'
+                target='_blank' rel="noreferrer"
               >
                 点击此处
               </a>
@@ -553,7 +618,7 @@ const SystemSetting = () => {
             配置 Turnstile
             <Header.Subheader>
               用以支持用户校验，
-              <a href='https://dash.cloudflare.com/' target='_blank'>
+              <a href='https://dash.cloudflare.com/' target='_blank' rel="noreferrer">
                 点击此处
               </a>
               管理你的 Turnstile Sites，推荐选择 Invisible Widget Type

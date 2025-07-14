@@ -17,6 +17,7 @@ import {
   IconKey,
   IconLayers,
   IconSetting,
+  IconSend,
   IconUser
 } from '@douyinfe/semi-icons';
 import { Layout, Nav } from '@douyinfe/semi-ui';
@@ -61,19 +62,21 @@ const SiderBar = () => {
       to: '/token',
       icon: <IconKey />
     },
-    {
+    // 根据设置决定是否显示兑换菜单
+    ...(localStorage.getItem('RedemptionMenuEnabled') !== 'false' ? [{
       text: '兑换',
       itemKey: 'redemption',
       to: '/redemption',
       icon: <IconGift />,
       className: isAdmin() ? 'semi-navigation-item-normal' : 'tableHiddle'
-    },
-    {
+    }] : []),
+    // 根据设置决定是否显示充值菜单
+    ...(localStorage.getItem('TopUpMenuEnabled') !== 'false' ? [{
       text: '充值',
       itemKey: 'topup',
       to: '/topup',
       icon: <IconCreditCard />
-    },
+    }] : []),
     {
       text: '用户',
       itemKey: 'user',
@@ -106,14 +109,14 @@ const SiderBar = () => {
       itemKey: 'setting',
       to: '/setting',
       icon: <IconSetting />
+    },
+    {
+        text: '关于',
+        itemKey: 'about',
+        to: '/about',
+        icon: <IconSend/>
     }
-    // {
-    //     text: '关于',
-    //     itemKey: 'about',
-    //     to: '/about',
-    //     icon: <IconAt/>
-    // }
-  ], [localStorage.getItem('enable_data_export'), localStorage.getItem('enable_drawing'), localStorage.getItem('chat_link'), isAdmin()]);
+  ], [localStorage.getItem('enable_data_export'), localStorage.getItem('enable_drawing'), localStorage.getItem('chat_link'), localStorage.getItem('RedemptionMenuEnabled'), localStorage.getItem('TopUpMenuEnabled'), isAdmin()]);
 
   const loadStatus = async () => {
     const res = await API.get('/api/status');
@@ -131,6 +134,8 @@ const SiderBar = () => {
       localStorage.setItem('data_export_default_time', data.data_export_default_time);
       localStorage.setItem('default_collapse_sidebar', data.default_collapse_sidebar);
       localStorage.setItem('mj_notify_enabled', data.mj_notify_enabled);
+      localStorage.setItem('RedemptionMenuEnabled', data.RedemptionMenuEnabled);
+      localStorage.setItem('TopUpMenuEnabled', data.TopUpMenuEnabled);
       if (data.chat_link) {
         localStorage.setItem('chat_link', data.chat_link);
       } else {

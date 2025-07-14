@@ -111,6 +111,10 @@ const UsersTable = () => {
           setEditingUser(record);
           setShowEditUser(true);
         }}>编辑</Button>
+        <Button theme="light" type="tertiary" style={{ marginRight: 1 }} onClick={() => {
+          setEditingUser(record);
+          setShowEditUser(true);
+        }}>编辑</Button>
       </>
       <Popconfirm
         title="确定是否要删除此用户？"
@@ -124,6 +128,19 @@ const UsersTable = () => {
         }}
       >
         <Button theme="light" type="danger" style={{ marginRight: 1 }}>删除</Button>
+      </Popconfirm>
+      <Popconfirm
+        title="确定是否要复位此用户的令牌？"
+        content="此修改将不可逆"
+        okType={'danger'}
+        position={'left'}
+        onConfirm={() => {
+          manageUser(record.username, 'resettoken', record).then(() => {
+            removeRecord(record.id);
+          });
+        }}
+      >
+        <Button theme="light" type="danger" style={{ marginRight: 1 }}>复位令牌</Button>
       </Popconfirm>
     </div>)
   }];

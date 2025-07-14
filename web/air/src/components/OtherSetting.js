@@ -116,16 +116,6 @@ const OtherSetting = () => {
             />
           </Form.Group>
           <Form.Button onClick={submitSystemName}>设置系统名称</Form.Button>
-          <Form.Group widths='equal'>
-            <Form.Input
-              label={<label>主题名称（<Link
-                to='https://github.com/songquanpeng/one-api/blob/main/web/README.md'>当前可用主题</Link>）</label>}
-              placeholder='请输入主题名称'
-              value={inputs.Theme}
-              name='Theme'
-              onChange={handleInputChange}
-            />
-          </Form.Group>
           <Form.Button onClick={submitTheme}>设置主题（重启生效）</Form.Button>
           <Form.Group widths='equal'>
             <Form.Input
@@ -160,8 +150,6 @@ const OtherSetting = () => {
             />
           </Form.Group>
           <Form.Button onClick={submitAbout}>保存关于</Form.Button>
-          <Message>移除 One API
-            的版权标识必须首先获得授权，项目维护需要花费大量精力，如果本项目对你有意义，请主动支持本项目。</Message>
           <Form.Group widths='equal'>
             <Form.Input
               label='页脚'
