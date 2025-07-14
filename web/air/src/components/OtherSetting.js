@@ -116,7 +116,6 @@ const OtherSetting = () => {
             />
           </Form.Group>
           <Form.Button onClick={submitSystemName}>设置系统名称</Form.Button>
-          <Form.Button onClick={submitTheme}>设置主题（重启生效）</Form.Button>
           <Form.Group widths='equal'>
             <Form.Input
               label='Logo 图片地址'

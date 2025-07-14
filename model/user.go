@@ -42,6 +42,7 @@ type User struct {
 	WeChatId         string `json:"wechat_id" gorm:"column:wechat_id;index"`
 	LarkId           string `json:"lark_id" gorm:"column:lark_id;index"`
 	OidcId           string `json:"oidc_id" gorm:"column:oidc_id;index"`
+	CASId            string `json:"cas_id" gorm:"column:cas_id;index"`
 	VerificationCode string `json:"verification_code" gorm:"-:all"`                                    // this field is only for Email verification, don't save it to database!
 	AccessToken      string `json:"access_token" gorm:"type:char(32);column:access_token;uniqueIndex"` // this token is for system management
 	Quota            int64  `json:"quota" gorm:"bigint;default:0"`
@@ -252,10 +253,16 @@ func (user *User) FillUserByLarkId() error {
 
 func (user *User) FillUserByOidcId() error {
 	if user.OidcId == "" {
-		return errors.New("oidc id 为空！")
+		return errors.New("OIDC ID 为空")
 	}
-	DB.Where(User{OidcId: user.OidcId}).First(user)
-	return nil
+	return DB.Where("oidc_id = ?", user.OidcId).First(user).Error
+}
+
+func (user *User) FillUserByCASId() error {
+	if user.CASId == "" {
+		return errors.New("CAS ID 为空")
+	}
+	return DB.Where("cas_id = ?", user.CASId).First(user).Error
 }
 
 func (user *User) FillUserByWeChatId() error {
@@ -291,7 +298,17 @@ func IsLarkIdAlreadyTaken(githubId string) bool {
 }
 
 func IsOidcIdAlreadyTaken(oidcId string) bool {
-	return DB.Where("oidc_id = ?", oidcId).Find(&User{}).RowsAffected == 1
+	if oidcId == "" {
+		return false
+	}
+	return DB.Where("oidc_id = ?", oidcId).First(&User{}).Error == nil
+}
+
+func IsCASIdAlreadyTaken(casId string) bool {
+	if casId == "" {
+		return false
+	}
+	return DB.Where("cas_id = ?", casId).First(&User{}).Error == nil
 }
 
 func IsUsernameAlreadyTaken(username string) bool {

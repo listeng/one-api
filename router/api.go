@@ -12,6 +12,7 @@ import (
 
 func SetApiRouter(router *gin.Engine) {
 	apiRouter := router.Group("/api")
+	apiRouter.Use(middleware.CORS())
 	apiRouter.Use(gzip.Gzip(gzip.DefaultCompression))
 	//apiRouter.Use(middleware.GlobalAPIRateLimit())
 	{
@@ -27,6 +28,9 @@ func SetApiRouter(router *gin.Engine) {
 		apiRouter.GET("/oauth/github", middleware.CriticalRateLimit(), auth.GitHubOAuth)
 		apiRouter.GET("/oauth/oidc", middleware.CriticalRateLimit(), auth.OidcAuth)
 		apiRouter.GET("/oauth/lark", middleware.CriticalRateLimit(), auth.LarkOAuth)
+		apiRouter.GET("/oauth/cas", middleware.CriticalRateLimit(), auth.CASAuth)
+		apiRouter.GET("/oauth/cas/bind", middleware.CriticalRateLimit(), middleware.UserAuth(), auth.CASBind)
+		apiRouter.GET("/oauth/cas/login", middleware.CriticalRateLimit(), auth.GenerateCASLoginURL)
 		apiRouter.GET("/oauth/state", middleware.CriticalRateLimit(), auth.GenerateOAuthCode)
 		apiRouter.GET("/oauth/wechat", middleware.CriticalRateLimit(), auth.WeChatAuth)
 		apiRouter.GET("/oauth/wechat/bind", middleware.CriticalRateLimit(), middleware.UserAuth(), auth.WeChatBind)

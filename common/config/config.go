@@ -93,6 +93,15 @@ var MessagePusherToken = ""
 var TurnstileSiteKey = ""
 var TurnstileSecretKey = ""
 
+// CAS 认证相关配置
+var CASAuthEnabled = false
+var CASLoginURL = ""
+var CASValidateURL = ""
+var CASLogoutURL = ""
+var CASRealm = ""
+var CASAdminRole = ""
+var CASCreateNewUser = true
+
 var QuotaForNewUser int64 = 0
 var QuotaForInviter int64 = 0
 var QuotaForInvitee int64 = 0
@@ -120,7 +129,7 @@ var RelayTimeout = env.Int("RELAY_TIMEOUT", 0) // unit is second
 
 var GeminiSafetySetting = env.String("GEMINI_SAFETY_SETTING", "BLOCK_NONE")
 
-var Theme = env.String("THEME", "default")
+var Theme = env.String("THEME", "air")
 var ValidThemes = map[string]bool{
 	"default": true,
 	"berry":   true,

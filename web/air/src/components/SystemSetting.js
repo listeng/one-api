@@ -31,7 +31,14 @@ const SystemSetting = () => {
     EmailDomainRestrictionEnabled: '',
     EmailDomainWhitelist: '',
     RedemptionMenuEnabled: '',
-    TopUpMenuEnabled: ''
+    TopUpMenuEnabled: '',
+    CASAuthEnabled: '',
+    CASLoginURL: '',
+    CASValidateURL: '',
+    CASLogoutURL: '',
+    CASRealm: '',
+    CASAdminRole: '',
+    CASCreateNewUser: ''
   });
   const [originInputs, setOriginInputs] = useState({});
   let [loading, setLoading] = useState(false);
@@ -47,13 +54,23 @@ const SystemSetting = () => {
       data.forEach((item) => {
         newInputs[item.key] = item.value;
       });
+
+      // 确保CAS相关选项有默认值
+      if (!newInputs.CASAuthEnabled) newInputs.CASAuthEnabled = 'false';
+      if (!newInputs.CASCreateNewUser) newInputs.CASCreateNewUser = 'true';
+      if (!newInputs.CASLoginURL) newInputs.CASLoginURL = '';
+      if (!newInputs.CASValidateURL) newInputs.CASValidateURL = '';
+      if (!newInputs.CASLogoutURL) newInputs.CASLogoutURL = '';
+      if (!newInputs.CASRealm) newInputs.CASRealm = '';
+      if (!newInputs.CASAdminRole) newInputs.CASAdminRole = '';
+
       setInputs({
         ...newInputs,
-        EmailDomainWhitelist: newInputs.EmailDomainWhitelist.split(',')
+        EmailDomainWhitelist: newInputs.EmailDomainWhitelist ? newInputs.EmailDomainWhitelist.split(',') : []
       });
       setOriginInputs(newInputs);
 
-      setEmailDomainWhitelist(newInputs.EmailDomainWhitelist.split(',').map((item) => {
+      setEmailDomainWhitelist((newInputs.EmailDomainWhitelist ? newInputs.EmailDomainWhitelist.split(',') : []).map((item) => {
         return { key: item, text: item, value: item };
       }));
     } else {
@@ -78,6 +95,8 @@ const SystemSetting = () => {
       case 'RegisterEnabled':
       case 'RedemptionMenuEnabled':
       case 'TopUpMenuEnabled':
+      case 'CASAuthEnabled':
+      case 'CASCreateNewUser':
         value = inputs[key] === 'true' ? 'false' : 'true';
         break;
       default:
@@ -118,14 +137,15 @@ const SystemSetting = () => {
       name === 'WeChatAccountQRCodeImageURL' ||
       name === 'TurnstileSiteKey' ||
       name === 'TurnstileSecretKey' ||
-      name === 'EmailDomainWhitelist'
+      name === 'EmailDomainWhitelist' ||
+      (name.startsWith('CAS') && name !== 'CASAuthEnabled' && name !== 'CASCreateNewUser')
     ) {
       setInputs((inputs) => ({ ...inputs, [name]: value }));
     } else if (name === 'RedemptionMenuEnabled' || name === 'TopUpMenuEnabled') {
       // 立即保存菜单显示控制设置
       const newValue = inputs[name] === 'true' ? 'false' : 'true';
       setInputs((inputs) => ({ ...inputs, [name]: newValue }));
-      
+
       // 立即调用后端API保存
       const res = await API.put('/api/option/', {
         key: name,
@@ -248,6 +268,17 @@ const SystemSetting = () => {
     }
   };
 
+  const submitCAS = async () => {
+    await updateOption('CASAuthEnabled', inputs.CASAuthEnabled);
+    await updateOption('CASLoginURL', inputs.CASLoginURL);
+    await updateOption('CASValidateURL', inputs.CASValidateURL);
+    await updateOption('CASLogoutURL', inputs.CASLogoutURL);
+    await updateOption('CASRealm', inputs.CASRealm);
+    await updateOption('CASAdminRole', inputs.CASAdminRole);
+    await updateOption('CASCreateNewUser', inputs.CASCreateNewUser);
+    showSuccess('保存成功！');
+  };
+
   const submitNewRestrictedDomain = () => {
     const localDomainList = inputs.EmailDomainWhitelist;
     if (restrictedDomainInput !== '' && !localDomainList.includes(restrictedDomainInput)) {
@@ -263,6 +294,8 @@ const SystemSetting = () => {
       }]);
     }
   }
+
+
 
   return (
     <Grid columns={1}>
@@ -283,7 +316,14 @@ const SystemSetting = () => {
           </Form.Button>
           <Divider />
           <Header as='h3'>配置登录注册</Header>
-          <Form.Group inline>
+            <Form.Group widths={2}>
+              <Form.Checkbox
+                checked={inputs.RegisterEnabled === 'true'}
+                label='允许新用户注册（此项为否时，新用户将无法以任何方式进行注册）'
+                name='RegisterEnabled'
+                onChange={handleInputChange}
+              />
+            </Form.Group>
             <Form.Checkbox
               checked={inputs.PasswordLoginEnabled === 'true'}
               label='允许通过密码进行登录'
@@ -316,6 +356,7 @@ const SystemSetting = () => {
                 </Modal.Actions>
               </Modal>
             }
+          <Form.Group widths={4}>
             <Form.Checkbox
               checked={inputs.PasswordRegisterEnabled === 'true'}
               label='允许通过密码进行注册'
@@ -326,6 +367,14 @@ const SystemSetting = () => {
               checked={inputs.EmailVerificationEnabled === 'true'}
               label='通过密码注册时需要进行邮箱验证'
               name='EmailVerificationEnabled'
+              onChange={handleInputChange}
+            />
+          </Form.Group>
+          <Form.Group widths={4}>
+            <Form.Checkbox
+              checked={inputs.CASAuthEnabled === 'true'}
+              label='允许通过CAS SSO登录 & 注册'
+              name='CASAuthEnabled'
               onChange={handleInputChange}
             />
             <Form.Checkbox
@@ -340,20 +389,14 @@ const SystemSetting = () => {
               name='WeChatAuthEnabled'
               onChange={handleInputChange}
             />
-          </Form.Group>
-          <Form.Group inline>
-            <Form.Checkbox
-              checked={inputs.RegisterEnabled === 'true'}
-              label='允许新用户注册（此项为否时，新用户将无法以任何方式进行注册）'
-              name='RegisterEnabled'
-              onChange={handleInputChange}
-            />
             <Form.Checkbox
               checked={inputs.TurnstileCheckEnabled === 'true'}
               label='启用 Turnstile 用户校验'
               name='TurnstileCheckEnabled'
               onChange={handleInputChange}
             />
+          </Form.Group>
+          <Form.Group widths={4}>
             <Form.Checkbox
               checked={inputs.RedemptionMenuEnabled === 'true'}
               label='启用兑换菜单'
@@ -468,32 +511,64 @@ const SystemSetting = () => {
           <Form.Button onClick={submitSMTP}>保存 SMTP 设置</Form.Button>
           <Divider />
           <Header as='h3'>
-            配置 CAS OSS
+            配置 CAS SSO
           </Header>
           <Message>
             CAS callback URL 一般填{' '}
-            <code>{`${inputs.ServerAddress}/cas`}</code>
+            <code>{`${inputs.ServerAddress}/api/oauth/cas`}</code>
           </Message>
           <Form.Group widths={3}>
             <Form.Input
-              label='Login URL'
-              name='LoginURL'
+              label='CAS Login URL'
+              name='CASLoginURL'
               onChange={handleInputChange}
               autoComplete='new-password'
               value={inputs.CASLoginURL}
-              placeholder='输入IDP的登录地址'
+              placeholder='输入CAS服务器的登录地址'
             />
             <Form.Input
-              label='Callback URL'
-              name='CallbackURL'
+              label='CAS Validate URL'
+              name='CASValidateURL'
               onChange={handleInputChange}
               autoComplete='new-password'
-              value={inputs.CASCallbackURL}
-              placeholder='输入登录之后的验证地址'
+              value={inputs.CASValidateURL}
+              placeholder='输入CAS服务器的验证地址'
+            />
+            <Form.Input
+              label='CAS Logout URL'
+              name='CASLogoutURL'
+              onChange={handleInputChange}
+              autoComplete='new-password'
+              value={inputs.CASLogoutURL}
+              placeholder='输入CAS服务器的登出地址（可选）'
             />
           </Form.Group>
-          <Form.Button onClick={submitGitHubOAuth}>
-            保存 GitHub OAuth 设置
+          <Form.Group widths={3}>
+            <Form.Input
+              label='CAS Realm'
+              name='CASRealm'
+              onChange={handleInputChange}
+              autoComplete='new-password'
+              value={inputs.CASRealm}
+              placeholder='输入CAS域名（可选）'
+            />
+            <Form.Input
+              label='CAS Admin Role'
+              name='CASAdminRole'
+              onChange={handleInputChange}
+              autoComplete='new-password'
+              value={inputs.CASAdminRole}
+              placeholder='输入管理员角色名称（可选）'
+            />
+            <Form.Checkbox
+              checked={inputs.CASCreateNewUser === 'true'}
+              label='允许创建新用户'
+              name='CASCreateNewUser'
+              onChange={handleInputChange}
+            />
+          </Form.Group>
+          <Form.Button onClick={submitCAS}>
+            保存 CAS 设置
           </Form.Button>
           <Divider />
           <Header as='h3'>

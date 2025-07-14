@@ -70,15 +70,6 @@ const Home = () => {
                       style={{ fontSize: '12px', color: 'var(--semi-color-text-1)' }}>系统信息总览</span>}>
                     <p>名称：{statusState?.status?.system_name}</p>
                     <p>版本：{statusState?.status?.version ? statusState?.status?.version : 'unknown'}</p>
-                    <p>
-                      源码：
-                      <a
-                        href='https://github.com/songquanpeng/one-api'
-                        target='_blank' rel='noreferrer'
-                      >
-                        https://github.com/songquanpeng/one-api
-                      </a>
-                    </p>
                     <p>启动时间：{getStartTimeString()}</p>
                   </Card>
                 </Col>
@@ -102,6 +93,10 @@ const Home = () => {
                     <p>
                       Turnstile 用户校验：
                       {statusState?.status?.turnstile_check === true ? '已启用' : '未启用'}
+                    </p>
+                    <p>
+                      CAS 身份验证：
+                      {statusState?.status?.cas_auth === true ? '已启用' : '未启用'}
                     </p>
                     {/*<p>*/}
                     {/*  Telegram 身份验证：*/}

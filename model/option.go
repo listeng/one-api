@@ -197,6 +197,20 @@ func updateOptionMap(key string, value string) (err error) {
 		config.OidcTokenEndpoint = value
 	case "OidcUserinfoEndpoint":
 		config.OidcUserinfoEndpoint = value
+	case "CASAuthEnabled":
+		config.CASAuthEnabled = value == "true"
+	case "CASLoginURL":
+		config.CASLoginURL = value
+	case "CASValidateURL":
+		config.CASValidateURL = value
+	case "CASLogoutURL":
+		config.CASLogoutURL = value
+	case "CASRealm":
+		config.CASRealm = value
+	case "CASAdminRole":
+		config.CASAdminRole = value
+	case "CASCreateNewUser":
+		config.CASCreateNewUser = value == "true"
 	case "Footer":
 		config.Footer = value
 	case "SystemName":

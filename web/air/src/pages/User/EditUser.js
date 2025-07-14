@@ -14,12 +14,13 @@ const EditUser = (props) => {
     password: '',
     github_id: '',
     wechat_id: '',
+    cas_id: '',
     email: '',
     quota: 0,
     group: 'default'
   });
   const [groupOptions, setGroupOptions] = useState([]);
-  const { username, display_name, password, github_id, wechat_id, telegram_id, email, quota, group } =
+  const { username, display_name, password, github_id, wechat_id, cas_id, telegram_id, email, quota, group } =
     inputs;
   const handleInputChange = (name, value) => {
     setInputs((inputs) => ({ ...inputs, [name]: value }));
@@ -194,9 +195,12 @@ const EditUser = (props) => {
             placeholder="此项只读，需要用户通过个人设置页面的相关绑定按钮进行绑定，不可直接修改"
             readonly
           />
+          <div style={{ marginTop: 20 }}>
+            <Typography.Text>已绑定的CAS账户</Typography.Text>
+          </div>
           <Input
-            name="telegram_id"
-            value={telegram_id}
+            name="cas_id"
+            value={cas_id}
             autoComplete="new-password"
             placeholder="此项只读，需要用户通过个人设置页面的相关绑定按钮进行绑定，不可直接修改"
             readonly

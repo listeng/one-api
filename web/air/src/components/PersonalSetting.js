@@ -50,6 +50,7 @@ const PersonalSetting = () => {
   const [models, setModels] = useState([]);
   const [openTransfer, setOpenTransfer] = useState(false);
   const [transferAmount, setTransferAmount] = useState(0);
+  const [showCASBindModal, setShowCASBindModal] = useState(false);
 
   useEffect(() => {
     // let user = localStorage.getItem('user');
@@ -290,6 +291,28 @@ const PersonalSetting = () => {
     }
   };
 
+  const onCASBindClicked = async () => {
+    try {
+      // 获取OAuth state
+      const stateRes = await API.get('/api/oauth/state');
+      const { success: stateSuccess, data: state } = stateRes.data;
+      if (!stateSuccess) {
+        showError('获取OAuth state失败');
+        return;
+      }
+
+      // 构建绑定URL
+      const serviceURL = encodeURIComponent(`${window.location.origin}/api/oauth/cas/bind`);
+      const bindURL = `${status.cas_login_url}?service=${serviceURL}&state=${state}`;
+      
+      // 打开CAS登录页面
+      window.open(bindURL, '_blank');
+      setShowCASBindModal(true);
+    } catch (error) {
+      showError('获取CAS登录链接失败');
+    }
+  };
+
   return (
     <div>
       <Layout>
@@ -357,46 +380,6 @@ const PersonalSetting = () => {
                 </Space>
               </div>
             </Card>
-            {/* <Card
-              footer={
-                <div>
-                  <Typography.Text>邀请链接</Typography.Text>
-                  <Input
-                    style={{ marginTop: 10 }}
-                    value={affLink}
-                    onClick={handleAffLinkClick}
-                    readOnly
-                  />
-                </div>
-              }
-            >
-              <Typography.Title heading={6}>邀请信息</Typography.Title>
-              <div style={{ marginTop: 10 }}>
-                <Descriptions row>
-                  <Descriptions.Item itemKey="待使用收益">
-                    <span style={{ color: 'rgba(var(--semi-red-5), 1)' }}>
-                      {
-                        renderQuota(userState?.user?.aff_quota)
-                      }
-                    </span>
-                    <Button type={'secondary'} onClick={() => setOpenTransfer(true)} size={'small'}
-                      style={{ marginLeft: 10 }}>划转</Button>
-                  </Descriptions.Item>
-                  <Descriptions.Item
-                    itemKey="总收益">{renderQuota(userState?.user?.aff_history_quota)}</Descriptions.Item>
-                  <Descriptions.Item itemKey="邀请人数">{userState?.user?.aff_count}</Descriptions.Item>
-                </Descriptions>
-              </div>
-            </Card> */}
-            <Card>
-              <Typography.Title heading={6}>邀请链接</Typography.Title>
-              <Input
-                style={{ marginTop: 10 }}
-                value={affLink}
-                onClick={handleAffLinkClick}
-                readOnly
-              />
-            </Card>
             <Card>
               <Typography.Title heading={6}>个人信息</Typography.Title>
               <div style={{ marginTop: 20 }}>
@@ -459,25 +442,27 @@ const PersonalSetting = () => {
                 </div>
               </div>
 
-              {/* <div style={{ marginTop: 10 }}>
-                <Typography.Text strong>Telegram</Typography.Text>
+              <div style={{ marginTop: 10 }}>
+                <Typography.Text strong>CAS</Typography.Text>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <div>
                     <Input
-                      value={userState.user && userState.user.telegram_id !== '' ? userState.user.telegram_id : '未绑定'}
+                      value={userState.user && userState.user.cas_id !== '' ? userState.user.cas_id : '未绑定'}
                       readonly={true}
                     ></Input>
                   </div>
                   <div>
-                    {status.telegram_oauth ?
-                      userState.user.telegram_id !== '' ? <Button disabled={true}>已绑定</Button>
-                        : <TelegramLoginButton dataAuthUrl="/api/oauth/telegram/bind"
-                          botName={status.telegram_bot_name} />
-                      : <Button disabled={true}>未启用</Button>
-                    }
+                    <Button
+                      onClick={onCASBindClicked}
+                      disabled={(userState.user && userState.user.cas_id !== '') || !status.cas_auth}
+                    >
+                      {
+                        status.cas_auth ? '绑定' : '未启用'
+                      }
+                    </Button>
                   </div>
                 </div>
-              </div> */}
+              </div>
 
               <div style={{ marginTop: 10 }}>
                 <Space>
@@ -530,6 +515,23 @@ const PersonalSetting = () => {
                   <Button color="" fluid size="large" onClick={bindWeChat}>
                     绑定
                   </Button>
+                </Modal>
+                <Modal
+                  onCancel={() => setShowCASBindModal(false)}
+                  visible={showCASBindModal}
+                  size={'small'}
+                  centered={true}
+                  maskClosable={false}
+                >
+                  <Typography.Title heading={6}>CAS账户绑定</Typography.Title>
+                  <div style={{ textAlign: 'center', marginTop: 20 }}>
+                    <p>
+                      请在新打开的窗口中完成CAS登录，登录成功后会自动绑定到当前账户。
+                    </p>
+                    <p style={{ color: '#999', fontSize: '14px' }}>
+                      如果绑定成功，请关闭此窗口并刷新页面。
+                    </p>
+                  </div>
                 </Modal>
               </div>
             </Card>

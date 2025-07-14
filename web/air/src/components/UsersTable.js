@@ -111,10 +111,6 @@ const UsersTable = () => {
           setEditingUser(record);
           setShowEditUser(true);
         }}>编辑</Button>
-        <Button theme="light" type="tertiary" style={{ marginRight: 1 }} onClick={() => {
-          setEditingUser(record);
-          setShowEditUser(true);
-        }}>编辑</Button>
       </>
       <Popconfirm
         title="确定是否要删除此用户？"

@@ -83,6 +83,14 @@ func UpdateOption(c *gin.Context) {
 			})
 			return
 		}
+	case "CASAuthEnabled":
+		if option.Value == "true" && (config.CASLoginURL == "" || config.CASValidateURL == "") {
+			c.JSON(http.StatusOK, gin.H{
+				"success": false,
+				"message": "无法启用 CAS 认证，请先填入 CAS Login URL 以及 CAS Validate URL！",
+			})
+			return
+		}
 	}
 	err = model.UpdateOption(option.Key, option.Value)
 	if err != nil {

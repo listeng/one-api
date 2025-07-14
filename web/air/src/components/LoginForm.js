@@ -11,6 +11,7 @@ import TelegramLoginButton from 'react-telegram-login';
 
 import { IconGithubLogo } from '@douyinfe/semi-icons';
 import WeChatIcon from './WeChatIcon';
+import CASIcon from './CASIcon';
 
 const LoginForm = () => {
   const [inputs, setInputs] = useState({
@@ -48,6 +49,20 @@ const LoginForm = () => {
 
   const onWeChatLoginClicked = () => {
     setShowWeChatLoginModal(true);
+  };
+
+  const onCASLoginClicked = async () => {
+    try {
+      const res = await API.get('/api/oauth/cas/login');
+      const { success, message, data } = res.data;
+      if (success) {
+        window.location.href = data;
+      } else {
+        showError(message);
+      }
+    } catch (error) {
+      showError('获取CAS登录链接失败');
+    }
   };
 
   const onSubmitWeChatVerificationCode = async () => {
@@ -165,7 +180,7 @@ const LoginForm = () => {
                     忘记密码 <Link to="/reset">点击重置</Link>
                   </Text>
                 </div>
-                {status.github_oauth || status.wechat_login || status.telegram_oauth ? (
+                {status.github_oauth || status.wechat_login || status.telegram_oauth || status.cas_auth ? (
                   <>
                     <Divider margin="12px" align="center">
                       第三方登录
@@ -193,6 +208,17 @@ const LoginForm = () => {
 
                       {status.telegram_oauth ? (
                         <TelegramLoginButton dataOnauth={onTelegramLoginClicked} botName={status.telegram_bot_name} />
+                      ) : (
+                        <></>
+                      )}
+
+                      {status.cas_auth ? (
+                        <Button
+                          type="primary"
+                          style={{ color: '#rgba(var(--semi-green-5), 1)' }}
+                          icon={<Icon svg={<CASIcon />} />}
+                          onClick={onCASLoginClicked}
+                        />
                       ) : (
                         <></>
                       )}
