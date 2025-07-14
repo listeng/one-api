@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Button, Divider, Form, Grid, Header, Modal, Message } from 'semantic-ui-react';
 import { API, removeTrailingSlash, showError, showSuccess } from '../helpers';
+import { ROUTES } from '../helpers/routes';
 
 const SystemSetting = () => {
   let [inputs, setInputs] = useState({
@@ -515,7 +516,7 @@ const SystemSetting = () => {
           </Header>
           <Message>
             CAS callback URL 一般填{' '}
-            <code>{`${inputs.ServerAddress}/api/oauth/cas`}</code>
+            <code>{`${inputs.ServerAddress}${ROUTES.OAUTH_CAS}`}</code>
           </Message>
           <Form.Group widths={3}>
             <Form.Input

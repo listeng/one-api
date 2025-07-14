@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { Dimmer, Loader, Segment } from 'semantic-ui-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { API, showError, showSuccess } from '../helpers';
+import { ROUTES } from '../helpers/routes';
 import { UserContext } from '../context/User';
 
 const CASOAuth = () => {
@@ -24,18 +25,18 @@ const CASOAuth = () => {
       if (success) {
         if (message === '绑定成功') {
           showSuccess('绑定成功！');
-          navigate('/setting');
+          navigate(ROUTES.SETTING);
         } else {
           userDispatch({ type: 'login', payload: data });
           localStorage.setItem('user', JSON.stringify(data));
           showSuccess('登录成功！');
-          navigate('/');
+          navigate(ROUTES.HOME);
         }
       } else {
         showError(message);
         if (count >= 2) { // 最多重试2次
           setPrompt(`操作失败，重定向至登录界面中...`);
-          navigate('/setting'); // 绑定失败时重定向到设置页面
+          navigate(ROUTES.SETTING); // 绑定失败时重定向到设置页面
           return;
         }
         count++;
@@ -48,7 +49,7 @@ const CASOAuth = () => {
       showError('网络请求失败');
       if (count >= 2) { // 最多重试2次
         setPrompt(`操作失败，重定向至登录界面中...`);
-        navigate('/setting');
+        navigate(ROUTES.SETTING);
         return;
       }
       count++;
@@ -68,7 +69,7 @@ const CASOAuth = () => {
     } else {
       setPrompt('没有收到CAS票据，重定向中...');
       setTimeout(() => {
-        navigate('/');
+        navigate(ROUTES.HOME);
       }, 2000);
     }
   }, []);

@@ -8,8 +8,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func SetDashboardRouter(router *gin.Engine) {
-	apiRouter := router.Group("/")
+func SetDashboardRouter(router *gin.RouterGroup) {
+	apiRouter := router
 	apiRouter.Use(middleware.CORS())
 	apiRouter.Use(gzip.Gzip(gzip.DefaultCompression))
 	//apiRouter.Use(middleware.GlobalAPIRateLimit())

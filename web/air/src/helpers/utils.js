@@ -2,6 +2,7 @@ import { Toast } from '@douyinfe/semi-ui';
 import { toastConstants } from '../constants';
 import React from 'react';
 import {toast} from "react-toastify";
+import { ROUTES } from './routes';
 
 const HTMLToastContent = ({ htmlContent }) => {
   return <div dangerouslySetInnerHTML={{ __html: htmlContent }} />;
@@ -79,7 +80,7 @@ export function showError(error) {
       switch (error.response.status) {
         case 401:
           // toast.error('错误：未登录或登录已过期，请重新登录！', showErrorOptions);
-          window.location.href = '/login?expired=true';
+          window.location.href = `${ROUTES.LOGIN}?expired=true`;
           break;
         case 429:
           Toast.error('错误：请求次数过多，请稍后再试！');

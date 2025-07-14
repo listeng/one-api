@@ -21,6 +21,7 @@ import {
 } from '@douyinfe/semi-ui';
 import { getQuotaPerUnit, renderQuota, renderQuotaWithPrompt, stringToColor } from '../helpers/render';
 import TelegramLoginButton from 'react-telegram-login';
+import { ROUTES } from '../helpers/routes';
 
 const PersonalSetting = () => {
   const [userState, userDispatch] = useContext(UserContext);
@@ -165,7 +166,7 @@ const PersonalSetting = () => {
       await API.get('/api/user/logout');
       userDispatch({ type: 'logout' });
       localStorage.removeItem('user');
-      navigate('/login');
+      navigate(ROUTES.LOGIN);
     } else {
       showError(message);
     }
@@ -302,7 +303,7 @@ const PersonalSetting = () => {
       }
 
       // 构建绑定URL
-      const serviceURL = encodeURIComponent(`${window.location.origin}/api/oauth/cas/bind`);
+      const serviceURL = encodeURIComponent(`${window.location.origin}${ROUTES.OAUTH_CAS}/bind`);
       const bindURL = `${status.cas_login_url}?service=${serviceURL}&state=${state}`;
       
       // 打开CAS登录页面

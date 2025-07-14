@@ -3,6 +3,7 @@ import { Dimmer, Loader, Segment } from 'semantic-ui-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { API, showError, showSuccess } from '../helpers';
 import { UserContext } from '../context/User';
+import { ROUTES } from '../helpers/routes';
 
 const GitHubOAuth = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -19,18 +20,18 @@ const GitHubOAuth = () => {
     if (success) {
       if (message === 'bind') {
         showSuccess('绑定成功！');
-        navigate('/setting');
+        navigate(ROUTES.SETTING);
       } else {
         userDispatch({ type: 'login', payload: data });
         localStorage.setItem('user', JSON.stringify(data));
         showSuccess('登录成功！');
-        navigate('/');
+        navigate(ROUTES.HOME);
       }
     } else {
       showError(message);
       if (count === 0) {
         setPrompt(`操作失败，重定向至登录界面中...`);
-        navigate('/setting'); // in case this is failed to bind GitHub
+        navigate(ROUTES.SETTING); // in case this is failed to bind GitHub
         return;
       }
       count++;

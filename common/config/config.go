@@ -136,6 +136,9 @@ var ValidThemes = map[string]bool{
 	"air":     true,
 }
 
+// URL 路径前缀配置
+var BasePath = env.String("BASE_PATH", "aigate")
+
 // All duration's unit is seconds
 // Shouldn't larger then RateLimitKeyExpirationDuration
 var (
@@ -176,3 +179,6 @@ var UserContentRequestProxy = env.String("USER_CONTENT_REQUEST_PROXY", "")
 var UserContentRequestTimeout = env.Int("USER_CONTENT_REQUEST_TIMEOUT", 30)
 
 var EnforceIncludeUsage = env.Bool("ENFORCE_INCLUDE_USAGE", false)
+
+// 静态文件目录配置
+var PublicDir = env.String("PUBLIC_DIR", "./public")

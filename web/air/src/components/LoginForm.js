@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { UserContext } from '../context/User';
 import { API, getLogo, showError, showInfo, showSuccess } from '../helpers';
+import { ROUTES } from '../helpers/routes';
 import { onGitHubOAuthClicked } from './utils';
 import Turnstile from 'react-turnstile';
 import { Button, Card, Divider, Form, Icon, Layout, Modal } from '@douyinfe/semi-ui';
@@ -53,7 +54,7 @@ const LoginForm = () => {
 
   const onCASLoginClicked = async () => {
     try {
-      const res = await API.get('/api/oauth/cas/login');
+      const res = await API.get(`/api/oauth/cas/login`);
       const { success, message, data } = res.data;
       if (success) {
         window.location.href = data;
@@ -77,7 +78,7 @@ const LoginForm = () => {
     if (success) {
       userDispatch({ type: 'login', payload: data });
       localStorage.setItem('user', JSON.stringify(data));
-      navigate('/');
+      navigate(ROUTES.HOME);
       showSuccess('登录成功！');
       setShowWeChatLoginModal(false);
     } else {
@@ -108,7 +109,7 @@ const LoginForm = () => {
         if (username === 'root' && password === '123456') {
           Modal.error({ title: '您正在使用默认密码！', content: '请立刻修改默认密码！', centered: true });
         }
-        navigate('/token');
+        navigate(ROUTES.TOKEN);
       } else {
         showError(message);
       }
@@ -132,7 +133,7 @@ const LoginForm = () => {
       userDispatch({ type: 'login', payload: data });
       localStorage.setItem('user', JSON.stringify(data));
       showSuccess('登录成功！');
-      navigate('/');
+      navigate(ROUTES.HOME);
     } else {
       showError(message);
     }
@@ -174,10 +175,10 @@ const LoginForm = () => {
                 </Form>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 20 }}>
                   <Text>
-                    没有账号请先 <Link to="/register">注册账号</Link>
+                    没有账号请先 <Link to={ROUTES.REGISTER}>注册账号</Link>
                   </Text>
                   <Text>
-                    忘记密码 <Link to="/reset">点击重置</Link>
+                    忘记密码 <Link to={ROUTES.RESET}>点击重置</Link>
                   </Text>
                 </div>
                 {status.github_oauth || status.wechat_login || status.telegram_oauth || status.cas_auth ? (

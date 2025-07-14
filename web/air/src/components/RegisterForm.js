@@ -3,6 +3,7 @@ import { Button, Form, Grid, Header, Image, Message, Segment } from 'semantic-ui
 import { Link, useNavigate } from 'react-router-dom';
 import { API, getLogo, showError, showInfo, showSuccess } from '../helpers';
 import Turnstile from 'react-turnstile';
+import { ROUTES } from '../helpers/routes';
 
 const RegisterForm = () => {
   const [inputs, setInputs] = useState({
@@ -69,7 +70,7 @@ const RegisterForm = () => {
       );
       const { success, message } = res.data;
       if (success) {
-        navigate('/login');
+        navigate(ROUTES.LOGIN);
         showSuccess('注册成功！');
       } else {
         showError(message);
@@ -182,7 +183,7 @@ const RegisterForm = () => {
         </Form>
         <Message>
           已有账户？
-          <Link to="/login" className="btn btn-link">
+          <Link to={ROUTES.LOGIN} className="btn btn-link">
             点击登录
           </Link>
         </Message>

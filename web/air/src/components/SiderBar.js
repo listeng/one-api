@@ -4,6 +4,7 @@ import { UserContext } from '../context/User';
 import { StatusContext } from '../context/Status';
 
 import { API, getLogo, getSystemName, isAdmin, isMobile, showError } from '../helpers';
+import { ROUTES } from '../helpers/routes';
 import '../index.css';
 
 import {
@@ -39,34 +40,34 @@ const SiderBar = () => {
     {
       text: '首页',
       itemKey: 'home',
-      to: '/',
+      to: ROUTES.HOME,
       icon: <IconHome />
     },
     {
       text: '渠道',
       itemKey: 'channel',
-      to: '/channel',
+      to: ROUTES.CHANNEL,
       icon: <IconLayers />,
       className: isAdmin() ? 'semi-navigation-item-normal' : 'tableHiddle'
     },
     {
       text: '聊天',
       itemKey: 'chat',
-      to: '/chat',
+      to: ROUTES.CHAT,
       icon: <IconComment />,
       className: localStorage.getItem('chat_link') ? 'semi-navigation-item-normal' : 'tableHiddle'
     },
     {
       text: '令牌',
       itemKey: 'token',
-      to: '/token',
+      to: ROUTES.TOKEN,
       icon: <IconKey />
     },
     // 根据设置决定是否显示兑换菜单
     ...(localStorage.getItem('RedemptionMenuEnabled') !== 'false' ? [{
       text: '兑换',
       itemKey: 'redemption',
-      to: '/redemption',
+      to: ROUTES.REDEMPTION,
       icon: <IconGift />,
       className: isAdmin() ? 'semi-navigation-item-normal' : 'tableHiddle'
     }] : []),
@@ -74,46 +75,46 @@ const SiderBar = () => {
     ...(localStorage.getItem('TopUpMenuEnabled') !== 'false' ? [{
       text: '充值',
       itemKey: 'topup',
-      to: '/topup',
+      to: `${ROUTES.BASE_PATH}/topup`,
       icon: <IconCreditCard />
     }] : []),
     {
       text: '用户',
       itemKey: 'user',
-      to: '/user',
+      to: ROUTES.USER,
       icon: <IconUser />,
       className: isAdmin() ? 'semi-navigation-item-normal' : 'tableHiddle'
     },
     {
       text: '日志',
       itemKey: 'log',
-      to: '/log',
+      to: ROUTES.LOG,
       icon: <IconHistogram />
     },
     {
       text: '数据看板',
       itemKey: 'detail',
-      to: '/detail',
+      to: `${ROUTES.BASE_PATH}/detail`,
       icon: <IconCalendarClock />,
       className: localStorage.getItem('enable_data_export') === 'true' ? 'semi-navigation-item-normal' : 'tableHiddle'
     },
     {
       text: '绘图',
       itemKey: 'midjourney',
-      to: '/midjourney',
+      to: ROUTES.MIDJOURNEY,
       icon: <IconImage />,
       className: localStorage.getItem('enable_drawing') === 'true' ? 'semi-navigation-item-normal' : 'tableHiddle'
     },
     {
       text: '设置',
       itemKey: 'setting',
-      to: '/setting',
+      to: ROUTES.SETTING,
       icon: <IconSetting />
     },
     {
         text: '关于',
         itemKey: 'about',
-        to: '/about',
+        to: ROUTES.ABOUT,
         icon: <IconSend/>
     }
   ], [localStorage.getItem('enable_data_export'), localStorage.getItem('enable_drawing'), localStorage.getItem('chat_link'), localStorage.getItem('RedemptionMenuEnabled'), localStorage.getItem('TopUpMenuEnabled'), isAdmin()]);
@@ -172,18 +173,18 @@ const SiderBar = () => {
             selectedKeys={selectedKeys}
             renderWrapper={({ itemElement, isSubNav, isInSubNav, props }) => {
               const routerMap = {
-                home: '/',
-                channel: '/channel',
-                token: '/token',
-                redemption: '/redemption',
-                topup: '/topup',
-                user: '/user',
-                log: '/log',
-                midjourney: '/midjourney',
-                setting: '/setting',
-                about: '/about',
-                chat: '/chat',
-                detail: '/detail'
+                home: ROUTES.HOME,
+                channel: ROUTES.CHANNEL,
+                token: ROUTES.TOKEN,
+                redemption: ROUTES.REDEMPTION,
+                topup: `${ROUTES.BASE_PATH}/topup`,
+                user: ROUTES.USER,
+                log: ROUTES.LOG,
+                midjourney: ROUTES.MIDJOURNEY,
+                setting: ROUTES.SETTING,
+                about: ROUTES.ABOUT,
+                chat: ROUTES.CHAT,
+                detail: `${ROUTES.BASE_PATH}/detail`
               };
               return (
                 <Link

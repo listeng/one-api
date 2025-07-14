@@ -25,6 +25,7 @@ import Chat from './pages/Chat';
 import { Layout } from '@douyinfe/semi-ui';
 import Midjourney from './pages/Midjourney';
 import Detail from './pages/Detail';
+import { ROUTES } from './helpers/routes';
 
 const Home = lazy(() => import('./pages/Home'));
 const About = lazy(() => import('./pages/About'));
@@ -61,7 +62,7 @@ function App() {
       <Layout.Content>
         <Routes>
           <Route
-            path="/"
+            path={ROUTES.HOME}
             element={
               <Suspense fallback={<Loading></Loading>}>
                 <Home />
@@ -69,7 +70,7 @@ function App() {
             }
           />
           <Route
-            path="/channel"
+            path={ROUTES.CHANNEL}
             element={
               <PrivateRoute>
                 <Channel />
@@ -77,7 +78,7 @@ function App() {
             }
           />
           <Route
-            path="/channel/edit/:id"
+            path={`${ROUTES.CHANNEL}/edit/:id`}
             element={
               <Suspense fallback={<Loading></Loading>}>
                 <EditChannel />
@@ -85,7 +86,7 @@ function App() {
             }
           />
           <Route
-            path="/channel/add"
+            path={`${ROUTES.CHANNEL}/add`}
             element={
               <Suspense fallback={<Loading></Loading>}>
                 <EditChannel />
@@ -93,7 +94,7 @@ function App() {
             }
           />
           <Route
-            path="/token"
+            path={ROUTES.TOKEN}
             element={
               <PrivateRoute>
                 <Token />
@@ -101,7 +102,7 @@ function App() {
             }
           />
           <Route
-            path="/redemption"
+            path={ROUTES.REDEMPTION}
             element={
               <PrivateRoute>
                 <Redemption />
@@ -109,7 +110,7 @@ function App() {
             }
           />
           <Route
-            path="/user"
+            path={ROUTES.USER}
             element={
               <PrivateRoute>
                 <User />
@@ -117,7 +118,7 @@ function App() {
             }
           />
           <Route
-            path="/user/edit/:id"
+            path={`${ROUTES.USER}/edit/:id`}
             element={
               <Suspense fallback={<Loading></Loading>}>
                 <EditUser />
@@ -125,7 +126,7 @@ function App() {
             }
           />
           <Route
-            path="/user/edit"
+            path={`${ROUTES.USER}/edit`}
             element={
               <Suspense fallback={<Loading></Loading>}>
                 <EditUser />
@@ -133,7 +134,7 @@ function App() {
             }
           />
           <Route
-            path="/user/reset"
+            path={`${ROUTES.USER}/reset`}
             element={
               <Suspense fallback={<Loading></Loading>}>
                 <PasswordResetConfirm />
@@ -141,7 +142,7 @@ function App() {
             }
           />
           <Route
-            path="/login"
+            path={ROUTES.LOGIN}
             element={
               <Suspense fallback={<Loading></Loading>}>
                 <LoginForm />
@@ -149,7 +150,7 @@ function App() {
             }
           />
           <Route
-            path="/register"
+            path={ROUTES.REGISTER}
             element={
               <Suspense fallback={<Loading></Loading>}>
                 <RegisterForm />
@@ -157,7 +158,7 @@ function App() {
             }
           />
           <Route
-            path="/reset"
+            path={ROUTES.RESET}
             element={
               <Suspense fallback={<Loading></Loading>}>
                 <PasswordResetForm />
@@ -165,7 +166,7 @@ function App() {
             }
           />
           <Route
-            path="/oauth/github"
+            path={ROUTES.OAUTH_GITHUB}
             element={
               <Suspense fallback={<Loading></Loading>}>
                 <GitHubOAuth />
@@ -173,7 +174,7 @@ function App() {
             }
           />
           <Route
-            path="/oauth/cas"
+            path={ROUTES.OAUTH_CAS}
             element={
               <Suspense fallback={<Loading></Loading>}>
                 <CASOAuth />
@@ -181,7 +182,7 @@ function App() {
             }
           />
           <Route
-            path="/oauth/cas/callback"
+            path={ROUTES.OAUTH_CAS_CALLBACK}
             element={
               <Suspense fallback={<Loading></Loading>}>
                 <CASCallback />
@@ -189,7 +190,7 @@ function App() {
             }
           />
           <Route
-            path="/setting"
+            path={ROUTES.SETTING}
             element={
               <PrivateRoute>
                 <Suspense fallback={<Loading></Loading>}>
@@ -199,7 +200,7 @@ function App() {
             }
           />
           <Route
-            path="/topup"
+            path={`${ROUTES.BASE_PATH}/topup`}
             element={
               <PrivateRoute>
                 <Suspense fallback={<Loading></Loading>}>
@@ -209,7 +210,7 @@ function App() {
             }
           />
           <Route
-            path="/log"
+            path={ROUTES.LOG}
             element={
               <PrivateRoute>
                 <Log />
@@ -217,7 +218,7 @@ function App() {
             }
           />
           <Route
-            path="/detail"
+            path={`${ROUTES.BASE_PATH}/detail`}
             element={
               <PrivateRoute>
                 <Detail />
@@ -225,7 +226,7 @@ function App() {
             }
           />
           <Route
-            path="/midjourney"
+            path={ROUTES.MIDJOURNEY}
             element={
               <PrivateRoute>
                 <Midjourney />
@@ -233,7 +234,7 @@ function App() {
             }
           />
           <Route
-            path="/about"
+            path={ROUTES.ABOUT}
             element={
               <Suspense fallback={<Loading></Loading>}>
                 <About />
@@ -241,7 +242,7 @@ function App() {
             }
           />
           <Route
-            path="/chat"
+            path={ROUTES.CHAT}
             element={
               <Suspense fallback={<Loading></Loading>}>
                 <Chat />

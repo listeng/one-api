@@ -363,7 +363,9 @@ graph LR
      + `SQL_CONN_MAX_LIFETIME`：连接的最大生命周期，默认为 `60`，单位分钟。
 4. `LOG_SQL_DSN`：设置之后将为 `logs` 表使用独立的数据库，请使用 MySQL 或 PostgreSQL。
 5. `FRONTEND_BASE_URL`：设置之后将重定向页面请求到指定的地址，仅限从服务器设置。
-   + 例子：`FRONTEND_BASE_URL=https://openai.justsong.cn`
++ 例子：`FRONTEND_BASE_URL=https://openai.justsong.cn`
++ 6. `BASE_PATH`：设置 URL 路径前缀，所有 API 和页面路径都会加上这个前缀，默认为 `aigate`。
++ 例子：`BASE_PATH=aigate`，访问地址变为 `http://xxx.com/aigate/login`、`http://xxx.com/aigate/api/xxx`
 6. `MEMORY_CACHE_ENABLED`：启用内存缓存，会导致用户额度的更新存在一定的延迟，可选值为 `true` 和 `false`，未设置则默认为 `false`。
    + 例子：`MEMORY_CACHE_ENABLED=true`
 7. `SYNC_FREQUENCY`：在启用缓存的情况下与数据库同步配置的频率，单位为秒，默认为 `600` 秒。

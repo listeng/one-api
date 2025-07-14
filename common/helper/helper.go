@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"log"
 	"net"
+	"one-api/common/config"
 	"one-api/common/random"
 	"os/exec"
 	"runtime"
@@ -105,6 +106,23 @@ func IntMax(a int, b int) int {
 
 func GenRequestID() string {
 	return GetTimeString() + random.GetRandomNumberString(8)
+}
+
+// GetPrefixedURL 生成带前缀的URL
+func GetPrefixedURL(path string) string {
+	if config.BasePath == "" {
+		return path
+	}
+
+	// 确保路径以/开头
+	if !strings.HasPrefix(path, "/") {
+		path = "/" + path
+	}
+
+	// 确保BasePath不以/开头
+	basePath := strings.TrimPrefix(config.BasePath, "/")
+
+	return "/" + basePath + path
 }
 
 func GetResponseID(c *gin.Context) string {

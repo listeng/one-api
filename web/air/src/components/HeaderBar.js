@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { UserContext } from '../context/User';
 
 import { API, getLogo, getSystemName, showSuccess } from '../helpers';
+import { ROUTES } from '../helpers/routes';
 import '../index.css';
 
 import fireworks from 'react-fireworks';
@@ -48,7 +49,7 @@ const HeaderBar = () => {
     showSuccess('注销成功!');
     userDispatch({ type: 'logout' });
     localStorage.removeItem('user');
-    navigate('/login');
+    navigate(ROUTES.LOGIN);
   }
 
   const handleNewYearClick = () => {
@@ -91,9 +92,9 @@ const HeaderBar = () => {
             // bodyStyle={{ height: 100 }}
             renderWrapper={({ itemElement, isSubNav, isInSubNav, props }) => {
               const routerMap = {
-                about: '/about',
-                login: '/login',
-                register: '/register'
+                about: ROUTES.ABOUT,
+                login: ROUTES.LOGIN,
+                register: ROUTES.REGISTER
               };
               return (
                 <Link

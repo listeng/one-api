@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/url"
 	"one-api/common/config"
+	"one-api/common/helper"
 	"one-api/common/logger"
 	"one-api/common/random"
 	"one-api/model"
@@ -150,18 +151,18 @@ func CASAuth(c *gin.Context) {
 
 	if !config.CASAuthEnabled {
 		logger.SysError("CAS认证未启用")
-		html := `
+		html := fmt.Sprintf(`
 <html>
   <body>
     <h1>CAS认证失败</h1>
     <p>管理员未开启通过 CAS 登录以及注册</p>
     <script>
-      alert("管理员未开启通过 CAS 登录以及注册");
-      window.location.href = '/';
+      		alert("管理员未开启通过 CAS 登录以及注册");
+      window.location.href = '%s';
     </script>
   </body>
 </html>
-`
+`, helper.GetPrefixedURL("/"))
 		c.Data(http.StatusOK, "text/html; charset=utf-8", []byte(html))
 		return
 	}
@@ -171,18 +172,18 @@ func CASAuth(c *gin.Context) {
 
 	if ticket == "" {
 		logger.SysError("CAS认证请求中缺少票据")
-		html := `
+		html := fmt.Sprintf(`
 <html>
   <body>
     <h1>CAS认证失败</h1>
     <p>没有票据</p>
     <script>
-      alert("没有票据");
-      window.location.href = '/';
+      		alert("没有票据");
+      window.location.href = '%s';
     </script>
   </body>
 </html>
-`
+`, helper.GetPrefixedURL("/"))
 		c.Data(http.StatusOK, "text/html; charset=utf-8", []byte(html))
 		return
 	}
@@ -192,7 +193,7 @@ func CASAuth(c *gin.Context) {
 
 	// 如果serviceURL为空，使用callback URL作为默认值
 	if serviceURL == "" {
-		serviceURL = fmt.Sprintf("%s/api/oauth/cas", config.ServerAddress)
+		serviceURL = fmt.Sprintf("%s%s", config.ServerAddress, helper.GetPrefixedURL("/api/oauth/cas"))
 		logger.SysLog(fmt.Sprintf("serviceURL为空，使用默认callback URL: %s", serviceURL))
 	}
 
@@ -206,11 +207,11 @@ func CASAuth(c *gin.Context) {
     <p>%s</p>
     <script>
       alert("%s");
-      window.location.href = '/';
+      window.location.href = '%s';
     </script>
   </body>
 </html>
-`, err.Error(), err.Error())
+`, err.Error(), err.Error(), helper.GetPrefixedURL("/"))
 		c.Data(http.StatusOK, "text/html; charset=utf-8", []byte(html))
 		return
 	}
@@ -235,11 +236,11 @@ func CASAuth(c *gin.Context) {
     <p>%s</p>
     <script>
       alert("%s");
-      window.location.href = '/';
+      window.location.href = '%s';
     </script>
   </body>
 </html>
-`, err.Error(), err.Error())
+`, err.Error(), err.Error(), helper.GetPrefixedURL("/"))
 			c.Data(http.StatusOK, "text/html; charset=utf-8", []byte(html))
 			return
 		}
@@ -281,29 +282,29 @@ func CASAuth(c *gin.Context) {
     <p>%s</p>
     <script>
       alert("%s");
-      window.location.href = '/';
+      window.location.href = '%s';
     </script>
   </body>
 </html>
-`, err.Error(), err.Error())
+`, err.Error(), err.Error(), helper.GetPrefixedURL("/"))
 				c.Data(http.StatusOK, "text/html; charset=utf-8", []byte(html))
 				return
 			}
 			logger.SysLog(fmt.Sprintf("成功创建CAS用户: %s", user.Username))
 		} else {
 			logger.SysError("管理员关闭了新用户注册")
-			html := `
+			html := fmt.Sprintf(`
 <html>
   <body>
     <h1>CAS认证失败</h1>
     <p>管理员关闭了新用户注册</p>
     <script>
       alert("管理员关闭了新用户注册");
-      window.location.href = '/';
+      window.location.href = '%s';
     </script>
   </body>
 </html>
-`
+`, helper.GetPrefixedURL("/"))
 			c.Data(http.StatusOK, "text/html; charset=utf-8", []byte(html))
 			return
 		}
@@ -312,18 +313,18 @@ func CASAuth(c *gin.Context) {
 	// 检查用户状态
 	if user.Status != model.UserStatusEnabled {
 		logger.SysError(fmt.Sprintf("CAS用户已被封禁: %s", user.Username))
-		html := `
+		html := fmt.Sprintf(`
 <html>
   <body>
     <h1>CAS认证失败</h1>
     <p>用户已被封禁</p>
     <script>
       alert("用户已被封禁");
-      window.location.href = '/';
+      window.location.href = '%s';
     </script>
   </body>
 </html>
-`
+`, helper.GetPrefixedURL("/"))
 		c.Data(http.StatusOK, "text/html; charset=utf-8", []byte(html))
 		return
 	}
@@ -338,18 +339,18 @@ func CASAuth(c *gin.Context) {
 	session.Set("status", user.Status)
 	err = session.Save()
 	if err != nil {
-		html := `
+		html := fmt.Sprintf(`
 <html>
   <body>
     <h1>CAS认证失败</h1>
     <p>无法保存会话信息，请重试</p>
     <script>
       alert("无法保存会话信息，请重试");
-      window.location.href = '/';
+      window.location.href = '%s';
     </script>
   </body>
 </html>
-`
+`, helper.GetPrefixedURL("/"))
 		c.Data(http.StatusOK, "text/html; charset=utf-8", []byte(html))
 		return
 	}
@@ -371,29 +372,29 @@ func CASAuth(c *gin.Context) {
         status: '%d'
       };
       localStorage.setItem('user', JSON.stringify(data));
-      window.location.href = '/';
+      window.location.href = '%s';
     </script>
   </body>
 </html>
-`, user.Id, user.Username, user.Role, user.Status)
+`, user.Id, user.Username, user.Role, user.Status, helper.GetPrefixedURL("/"))
 	c.Data(http.StatusOK, "text/html; charset=utf-8", []byte(html))
 }
 
 // CASBind CAS账户绑定
 func CASBind(c *gin.Context) {
 	if !config.CASAuthEnabled {
-		html := `
+		html := fmt.Sprintf(`
 <html>
   <body>
     <h1>CAS绑定失败</h1>
     <p>管理员未开启通过 CAS 登录以及注册</p>
     <script>
       alert("管理员未开启通过 CAS 登录以及注册");
-      window.location.href = '/setting';
+      window.location.href = '%s';
     </script>
   </body>
 </html>
-`
+`, helper.GetPrefixedURL("/setting"))
 		c.Data(http.StatusOK, "text/html; charset=utf-8", []byte(html))
 		return
 	}
@@ -402,18 +403,18 @@ func CASBind(c *gin.Context) {
 	serviceURL := c.Query("service")
 
 	if ticket == "" {
-		html := `
+		html := fmt.Sprintf(`
 <html>
   <body>
     <h1>CAS绑定失败</h1>
     <p>没有票据</p>
     <script>
       alert("没有票据");
-      window.location.href = '/setting';
+      window.location.href = '%s';
     </script>
   </body>
 </html>
-`
+`, helper.GetPrefixedURL("/setting"))
 		c.Data(http.StatusOK, "text/html; charset=utf-8", []byte(html))
 		return
 	}
@@ -422,7 +423,7 @@ func CASBind(c *gin.Context) {
 
 	// 如果serviceURL为空，使用callback URL作为默认值
 	if serviceURL == "" {
-		serviceURL = fmt.Sprintf("%s/api/oauth/cas/bind", config.ServerAddress)
+		serviceURL = fmt.Sprintf("%s%s", config.ServerAddress, helper.GetPrefixedURL("/api/oauth/cas/bind"))
 		logger.SysLog(fmt.Sprintf("serviceURL为空，使用默认callback URL: %s", serviceURL))
 	}
 
@@ -435,29 +436,29 @@ func CASBind(c *gin.Context) {
     <p>%s</p>
     <script>
       alert("%s");
-      window.location.href = '/setting';
+      window.location.href = '%s';
     </script>
   </body>
 </html>
-`, err.Error(), err.Error())
+`, err.Error(), err.Error(), helper.GetPrefixedURL("/setting"))
 		c.Data(http.StatusOK, "text/html; charset=utf-8", []byte(html))
 		return
 	}
 
 	// 检查CAS账户是否已被绑定
 	if model.IsCASIdAlreadyTaken(casUser.Uid) {
-		html := `
+		html := fmt.Sprintf(`
 <html>
   <body>
     <h1>CAS绑定失败</h1>
     <p>该 CAS 账户已被绑定</p>
     <script>
       alert("该 CAS 账户已被绑定");
-      window.location.href = '/setting';
+      window.location.href = '%s';
     </script>
   </body>
 </html>
-`
+`, helper.GetPrefixedURL("/setting"))
 		c.Data(http.StatusOK, "text/html; charset=utf-8", []byte(html))
 		return
 	}
@@ -466,18 +467,18 @@ func CASBind(c *gin.Context) {
 	session := sessions.Default(c)
 	id := session.Get("id")
 	if id == nil {
-		html := `
+		html := fmt.Sprintf(`
 <html>
   <body>
     <h1>CAS绑定失败</h1>
     <p>请先登录</p>
     <script>
       alert("请先登录");
-      window.location.href = '/login';
+      window.location.href = '%s';
     </script>
   </body>
 </html>
-`
+`, helper.GetPrefixedURL("/login"))
 		c.Data(http.StatusOK, "text/html; charset=utf-8", []byte(html))
 		return
 	}
@@ -492,11 +493,11 @@ func CASBind(c *gin.Context) {
     <p>%s</p>
     <script>
       alert("%s");
-      window.location.href = '/setting';
+      window.location.href = '%s';
     </script>
   </body>
 </html>
-`, err.Error(), err.Error())
+`, err.Error(), err.Error(), helper.GetPrefixedURL("/setting"))
 		c.Data(http.StatusOK, "text/html; charset=utf-8", []byte(html))
 		return
 	}
@@ -512,28 +513,28 @@ func CASBind(c *gin.Context) {
     <p>%s</p>
     <script>
       alert("%s");
-      window.location.href = '/setting';
+      window.location.href = '%s';
     </script>
   </body>
 </html>
-`, err.Error(), err.Error())
+`, err.Error(), err.Error(), helper.GetPrefixedURL("/setting"))
 		c.Data(http.StatusOK, "text/html; charset=utf-8", []byte(html))
 		return
 	}
 
 	// 绑定成功
-	html := `
+	html := fmt.Sprintf(`
 <html>
   <body>
     <h1>CAS绑定成功</h1>
     <p>CAS账户绑定成功！</p>
     <script>
       alert("CAS账户绑定成功！");
-      window.location.href = '/setting';
+      window.location.href = '%s';
     </script>
   </body>
 </html>
-`
+`, helper.GetPrefixedURL("/setting"))
 	c.Data(http.StatusOK, "text/html; charset=utf-8", []byte(html))
 }
 
@@ -554,7 +555,7 @@ func GenerateCASLoginURL(c *gin.Context) {
 	session.Save()
 
 	// 构建CAS登录URL
-	serviceURL := fmt.Sprintf("%s/api/oauth/cas", config.ServerAddress)
+	serviceURL := fmt.Sprintf("%s%s", config.ServerAddress, helper.GetPrefixedURL("/api/oauth/cas"))
 	loginURL := fmt.Sprintf("%s?service=%s&state=%s",
 		config.CASLoginURL,
 		url.QueryEscape(serviceURL),

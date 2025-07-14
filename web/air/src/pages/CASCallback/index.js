@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { API } from '../../helpers/api';
+import { ROUTES } from '../../helpers/routes';
 
 const CASCallback = () => {
     const location = useLocation();
@@ -44,7 +45,7 @@ const CASCallback = () => {
 
                     // 延迟跳转到主页
                     setTimeout(() => {
-                        navigate('/', { replace: true });
+                        navigate(ROUTES.HOME, { replace: true });
                     }, 1500);
                 } else {
                     setStatus('error');
@@ -96,7 +97,7 @@ const CASCallback = () => {
                         </p>
                         {status === 'error' && (
                             <button
-                                onClick={() => navigate('/')}
+                                onClick={() => navigate(ROUTES.HOME)}
                                 className="mt-4 w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                             >
                                 返回首页
