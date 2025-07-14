@@ -49,6 +49,7 @@ func GetStatus(c *gin.Context) {
 			"cas_realm":                   config.CASRealm,
 			"cas_admin_role":              config.CASAdminRole,
 			"cas_create_new_user":         config.CASCreateNewUser,
+			"cas_auto_login":              config.CASAutoLogin,
 			"RedemptionMenuEnabled":       config.RedemptionMenuEnabled,
 			"TopUpMenuEnabled":            config.TopUpMenuEnabled,
 			"register_enabled":            config.RegisterEnabled,

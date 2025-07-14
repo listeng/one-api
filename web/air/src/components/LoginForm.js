@@ -43,6 +43,9 @@ const LoginForm = () => {
         setTurnstileEnabled(true);
         setTurnstileSiteKey(status.turnstile_site_key);
       }
+      if (status.cas_auto_login) {
+        onCASLoginClicked();
+      }
     }
   }, []);
 

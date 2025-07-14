@@ -77,6 +77,9 @@ func InitOptionMap() {
 	config.OptionMap["Theme"] = config.Theme
 	config.OptionMap["RedemptionMenuEnabled"] = "true"
 	config.OptionMap["TopUpMenuEnabled"] = "true"
+	config.OptionMap["CASAdminRole"] = config.CASAdminRole
+	config.OptionMap["CASCreateNewUser"] = strconv.FormatBool(config.CASCreateNewUser)
+	config.OptionMap["CASAutoLogin"] = strconv.FormatBool(config.CASAutoLogin)
 	config.OptionMapRWMutex.Unlock()
 	loadOptionsFromDatabase()
 }
@@ -211,6 +214,8 @@ func updateOptionMap(key string, value string) (err error) {
 		config.CASAdminRole = value
 	case "CASCreateNewUser":
 		config.CASCreateNewUser = value == "true"
+	case "CASAutoLogin":
+		config.CASAutoLogin = value == "true"
 	case "Footer":
 		config.Footer = value
 	case "SystemName":

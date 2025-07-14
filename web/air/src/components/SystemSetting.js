@@ -39,7 +39,8 @@ const SystemSetting = () => {
     CASLogoutURL: '',
     CASRealm: '',
     CASAdminRole: '',
-    CASCreateNewUser: ''
+    CASCreateNewUser: '',
+    CASAutoLogin: ''
   });
   const [originInputs, setOriginInputs] = useState({});
   let [loading, setLoading] = useState(false);
@@ -64,6 +65,7 @@ const SystemSetting = () => {
       if (!newInputs.CASLogoutURL) newInputs.CASLogoutURL = '';
       if (!newInputs.CASRealm) newInputs.CASRealm = '';
       if (!newInputs.CASAdminRole) newInputs.CASAdminRole = '';
+      if (!newInputs.CASAutoLogin) newInputs.CASAutoLogin = 'false';
 
       setInputs({
         ...newInputs,
@@ -98,6 +100,7 @@ const SystemSetting = () => {
       case 'TopUpMenuEnabled':
       case 'CASAuthEnabled':
       case 'CASCreateNewUser':
+      case 'CASAutoLogin':
         value = inputs[key] === 'true' ? 'false' : 'true';
         break;
       default:
@@ -139,7 +142,7 @@ const SystemSetting = () => {
       name === 'TurnstileSiteKey' ||
       name === 'TurnstileSecretKey' ||
       name === 'EmailDomainWhitelist' ||
-      (name.startsWith('CAS') && name !== 'CASAuthEnabled' && name !== 'CASCreateNewUser')
+      (name.startsWith('CAS') && name !== 'CASAuthEnabled' && name !== 'CASCreateNewUser' && name !== 'CASAutoLogin')
     ) {
       setInputs((inputs) => ({ ...inputs, [name]: value }));
     } else if (name === 'RedemptionMenuEnabled' || name === 'TopUpMenuEnabled') {
@@ -270,7 +273,6 @@ const SystemSetting = () => {
   };
 
   const submitCAS = async () => {
-    await updateOption('CASAuthEnabled', inputs.CASAuthEnabled);
     await updateOption('CASLoginURL', inputs.CASLoginURL);
     await updateOption('CASValidateURL', inputs.CASValidateURL);
     await updateOption('CASLogoutURL', inputs.CASLogoutURL);
@@ -514,6 +516,14 @@ const SystemSetting = () => {
           <Header as='h3'>
             配置 CAS SSO
           </Header>
+          <Form.Group widths={2}>
+            <Form.Checkbox
+              checked={inputs.CASAutoLogin === 'true'}
+              label='启用 CAS 自动登录（开启后，登录页会自动跳转CAS认证）'
+              name='CASAutoLogin'
+              onChange={handleInputChange}
+            />
+          </Form.Group>
           <Message>
             CAS callback URL 一般填{' '}
             <code>{`${inputs.ServerAddress}${ROUTES.OAUTH_CAS}`}</code>
