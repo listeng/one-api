@@ -51,6 +51,8 @@ func GetStatus(c *gin.Context) {
 			"cas_create_new_user":         config.CASCreateNewUser,
 			"RedemptionMenuEnabled":       config.RedemptionMenuEnabled,
 			"TopUpMenuEnabled":            config.TopUpMenuEnabled,
+			"register_enabled":            config.RegisterEnabled,
+			"password_register_enabled":   config.PasswordRegisterEnabled,
 		},
 	})
 	return

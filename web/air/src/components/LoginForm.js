@@ -173,14 +173,18 @@ const LoginForm = () => {
                     登录
                   </Button>
                 </Form>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 20 }}>
-                  <Text>
-                    没有账号请先 <Link to={ROUTES.REGISTER}>注册账号</Link>
-                  </Text>
-                  <Text>
-                    忘记密码 <Link to={ROUTES.RESET}>点击重置</Link>
-                  </Text>
-                </div>
+                {status.register_enabled && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 20 }}>
+                    <Text>
+                      没有账号请先 <Link to={ROUTES.REGISTER}>注册账号</Link>
+                    </Text>
+                    {status.password_register_enabled && (
+                      <Text>
+                        忘记密码 <Link to={ROUTES.RESET}>点击重置</Link>
+                      </Text>
+                    )}
+                  </div>
+                )}
                 {status.github_oauth || status.wechat_login || status.telegram_oauth || status.cas_auth ? (
                   <>
                     <Divider margin="12px" align="center">

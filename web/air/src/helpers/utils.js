@@ -2,7 +2,7 @@ import { Toast } from '@douyinfe/semi-ui';
 import { toastConstants } from '../constants';
 import React from 'react';
 import {toast} from "react-toastify";
-import { ROUTES } from './routes';
+import { ROUTES, BASE_PATH } from './routes';
 
 const HTMLToastContent = ({ htmlContent }) => {
   return <div dangerouslySetInnerHTML={{ __html: htmlContent }} />;
@@ -30,7 +30,7 @@ export function getSystemName() {
 
 export function getLogo() {
   let logo = localStorage.getItem('logo');
-  if (!logo) return '/logo.png';
+  if (!logo) return `/${BASE_PATH}/logo.png`;
   return logo
 }
 

@@ -101,6 +101,7 @@ var CASLogoutURL = ""
 var CASRealm = ""
 var CASAdminRole = ""
 var CASCreateNewUser = true
+var CASAutoLogin = false
 
 var QuotaForNewUser int64 = 0
 var QuotaForInviter int64 = 0
