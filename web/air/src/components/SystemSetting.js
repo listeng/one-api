@@ -595,7 +595,7 @@ const SystemSetting = () => {
           <Message>
             Homepage URL 填 <code>{inputs.ServerAddress}</code>
             ，Authorization callback URL 填{' '}
-            <code>{`${inputs.ServerAddress}/api/oauth/github`}</code>
+            <code>{`${inputs.ServerAddress}${ROUTES.OAUTH_GITHUB}`}</code>
           </Message>
           <Form.Group widths={3}>
             <Form.Input

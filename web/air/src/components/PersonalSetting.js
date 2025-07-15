@@ -623,6 +623,7 @@ const PersonalSetting = () => {
                 <Input
                   name="set_new_password"
                   placeholder="新密码"
+                  type='password'
                   value={inputs.set_new_password}
                   onChange={(value) => handleInputChange('set_new_password', value)}
                 />
@@ -630,6 +631,7 @@ const PersonalSetting = () => {
                   style={{ marginTop: 20 }}
                   name="set_new_password_confirmation"
                   placeholder="确认新密码"
+                  type='password'
                   value={inputs.set_new_password_confirmation}
                   onChange={(value) => handleInputChange('set_new_password_confirmation', value)}
                 />
