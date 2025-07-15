@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strings"
 
+	"one-api/common/config"
 	"one-api/relay/adaptor"
 	"one-api/relay/adaptor/doubao"
 	"one-api/relay/adaptor/minimax"
@@ -27,6 +28,15 @@ func (a *Adaptor) Init(meta *meta.Meta) {
 	a.ChannelType = meta.ChannelType
 }
 
+// removeBasePath 移除URL路径中的BasePath前缀
+func removeBasePath(requestPath string) string {
+	if config.BasePath != "" {
+		basePath := "/" + strings.Trim(config.BasePath, "/")
+		requestPath = strings.TrimPrefix(requestPath, basePath)
+	}
+	return requestPath
+}
+
 func (a *Adaptor) GetRequestURL(meta *meta.Meta) (string, error) {
 	switch meta.ChannelType {
 	case channeltype.Azure:
@@ -39,6 +49,8 @@ func (a *Adaptor) GetRequestURL(meta *meta.Meta) (string, error) {
 
 		// https://learn.microsoft.com/en-us/azure/cognitive-services/openai/chatgpt-quickstart?pivots=rest-api&tabs=command-line#rest-api
 		requestURL := strings.Split(meta.RequestURLPath, "?")[0]
+		// 移除BasePath前缀
+		requestURL = removeBasePath(requestURL)
 		requestURL = fmt.Sprintf("%s?api-version=%s", requestURL, meta.Config.APIVersion)
 		task := strings.TrimPrefix(requestURL, "/v1/")
 		model_ := meta.ActualModelName
@@ -54,7 +66,9 @@ func (a *Adaptor) GetRequestURL(meta *meta.Meta) (string, error) {
 	case channeltype.Novita:
 		return novita.GetRequestURL(meta)
 	default:
-		return GetFullRequestURL(meta.BaseURL, meta.RequestURLPath, meta.ChannelType), nil
+		// 移除BasePath前缀
+		requestPath := removeBasePath(meta.RequestURLPath)
+		return GetFullRequestURL(meta.BaseURL, requestPath, meta.ChannelType), nil
 	}
 }
 

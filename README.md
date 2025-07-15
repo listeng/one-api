@@ -465,3 +465,10 @@ https://openai.justsong.cn
 同样适用于基于本项目的二开项目。
 
 依据 MIT 协议，使用者需自行承担使用本项目的风险与责任，本开源项目开发者与此无关。
+
+离线部署需要自行下载：https://openaipublic.blob.core.windows.net/encodings/cl100k_base.tiktoken
+放到cache目录，并且复制成两个文件，分别改名成
+9b5ad71b2ce5302211f9c61530b329a4922fc6a4
+fb374d419588a4632f3f557e76b4b70aebbca790
+
+然后设置环境变量TIKTOKEN_CACHE_DIR=cache

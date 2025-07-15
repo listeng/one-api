@@ -24,7 +24,7 @@ export const ROUTES = {
   CHAT: getRoutePath('/chat'),
   MIDJOURNEY: getRoutePath('/midjourney'),
   ABOUT: getRoutePath('/about'),
-  OAUTH_GITHUB: getRoutePath('/oauth/github'),
-  OAUTH_CAS: getRoutePath('/oauth/cas'),
-  OAUTH_CAS_CALLBACK: getRoutePath('/oauth/cas/callback'),
+  OAUTH_GITHUB: getRoutePath('/api/oauth/github'),
+  OAUTH_CAS: getRoutePath('/api/oauth/cas'),
+  OAUTH_CAS_CALLBACK: getRoutePath('/api/oauth/cas/callback'),
 }; 

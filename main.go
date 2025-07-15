@@ -119,8 +119,12 @@ func main() {
 	if port == "" {
 		port = strconv.Itoa(*common.Port)
 	}
-	logger.SysLogf("server started on http://localhost:%s", port)
-	err = server.Run(":" + port)
+	var host = os.Getenv("HOST")
+	if host == "" {
+		host = "0.0.0.0"
+	}
+	logger.SysLogf("server started on http://%s:%s", host, port)
+	err = server.Run(host + ":" + port)
 	if err != nil {
 		logger.FatalLog("failed to start HTTP server: " + err.Error())
 	}

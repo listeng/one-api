@@ -47,6 +47,9 @@ func Init() {
 	if os.Getenv("SQLITE_PATH") != "" {
 		SQLitePath = os.Getenv("SQLITE_PATH")
 	}
+	if os.Getenv("FRONTEND_BASE_URL") != "" {
+		config.ServerAddress = os.Getenv("FRONTEND_BASE_URL")
+	}
 	if *LogDir != "" {
 		var err error
 		*LogDir, err = filepath.Abs(*LogDir)

@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strings"
 
+	"one-api/common/config"
 	"one-api/relay/adaptor"
 	channelhelper "one-api/relay/adaptor"
 	"one-api/relay/meta"
@@ -59,9 +60,19 @@ func (a *Adaptor) GetChannelName() string {
 
 // GetRequestURL remove static prefix, and return the real request url to the upstream service
 func (a *Adaptor) GetRequestURL(meta *meta.Meta) (string, error) {
-	prefix := fmt.Sprintf("/v1/oneapi/proxy/%d", meta.ChannelId)
-	return meta.BaseURL + strings.TrimPrefix(meta.RequestURLPath, prefix), nil
+	requestPath := meta.RequestURLPath
 
+	// 如果配置了BasePath，先移除BasePath前缀，避免将aigate发送到后端
+	if config.BasePath != "" {
+		basePath := "/" + strings.Trim(config.BasePath, "/")
+		requestPath = strings.TrimPrefix(requestPath, basePath)
+	}
+
+	// 然后移除proxy前缀
+	prefix := fmt.Sprintf("/v1/oneapi/proxy/%d", meta.ChannelId)
+	requestPath = strings.TrimPrefix(requestPath, prefix)
+
+	return meta.BaseURL + requestPath, nil
 }
 
 func (a *Adaptor) SetupRequestHeader(c *gin.Context, req *http.Request, meta *meta.Meta) error {
