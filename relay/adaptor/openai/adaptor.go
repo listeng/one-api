@@ -54,11 +54,12 @@ func (a *Adaptor) GetRequestURL(meta *meta.Meta) (string, error) {
 		requestURL = fmt.Sprintf("%s?api-version=%s", requestURL, meta.Config.APIVersion)
 		task := strings.TrimPrefix(requestURL, "/v1/")
 		model_ := meta.ActualModelName
-		model_ = strings.Replace(model_, ".", "", -1)
+		//model_ = strings.Replace(model_, ".", "", -1)
 		//https://github.com/songquanpeng/one-api/issues/1191
 		// {your endpoint}/openai/deployments/{your azure_model}/chat/completions?api-version={api_version}
 		requestURL = fmt.Sprintf("/openai/deployments/%s/%s", model_, task)
-		return GetFullRequestURL(meta.BaseURL, requestURL, meta.ChannelType), nil
+		fullUrl := GetFullRequestURL(meta.BaseURL, requestURL, meta.ChannelType)
+		return fullUrl, nil
 	case channeltype.Minimax:
 		return minimax.GetRequestURL(meta)
 	case channeltype.Doubao:

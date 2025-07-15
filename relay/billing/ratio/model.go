@@ -22,6 +22,7 @@ const (
 var ModelRatio = map[string]float64{
 	// https://openai.com/pricing
 	"gpt-4":                    15,
+	"gpt-4.1":                  15,
 	"gpt-4-0314":               15,
 	"gpt-4-0613":               15,
 	"gpt-4-32k":                30,
@@ -111,6 +112,8 @@ var ModelRatio = map[string]float64{
 	"gemini-1.5-flash": 1,
 	"gemini-1.5-pro":   1,
 	"aqa":              1,
+	"gemini-2.0-flash": 1,
+	"gemini-2.5-pro":   1,
 	// https://open.bigmodel.cn/pricing
 	"glm-4":         0.1 * RMB,
 	"glm-4v":        0.1 * RMB,
