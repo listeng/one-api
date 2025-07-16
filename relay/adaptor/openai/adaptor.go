@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"one-api/common/config"
+	"one-api/common/logger"
 	"one-api/relay/adaptor"
 	"one-api/relay/adaptor/doubao"
 	"one-api/relay/adaptor/minimax"
@@ -133,6 +134,7 @@ func (a *Adaptor) DoResponse(c *gin.Context, resp *http.Response, meta *meta.Met
 		var responseText string
 		err, responseText, usage = StreamHandler(c, resp, meta.Mode)
 		if usage == nil || usage.TotalTokens == 0 {
+			logger.SysLogf("responseText: %s", responseText)
 			usage = ResponseText2Usage(responseText, meta.ActualModelName, meta.PromptTokens)
 		}
 		if usage.TotalTokens != 0 && usage.PromptTokens == 0 { // some channels don't return prompt tokens & completion tokens

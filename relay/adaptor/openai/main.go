@@ -36,6 +36,7 @@ func StreamHandler(c *gin.Context, resp *http.Response, relayMode int) (*model.E
 	doneRendered := false
 	for scanner.Scan() {
 		data := scanner.Text()
+
 		if len(data) < dataPrefixLength { // ignore blank line or wrong format
 			continue
 		}
@@ -47,6 +48,7 @@ func StreamHandler(c *gin.Context, resp *http.Response, relayMode int) (*model.E
 			doneRendered = true
 			continue
 		}
+
 		switch relayMode {
 		case relaymode.ChatCompletions:
 			var streamResponse ChatCompletionsStreamResponse
@@ -60,7 +62,9 @@ func StreamHandler(c *gin.Context, resp *http.Response, relayMode int) (*model.E
 				// but for empty choice and no usage, we should not pass it to client, this is for azure
 				continue // just ignore empty choice
 			}
+
 			render.StringData(c, data)
+
 			for _, choice := range streamResponse.Choices {
 				responseText += conv.AsString(choice.Delta.Content)
 			}
@@ -166,9 +170,7 @@ func RerankHandler(c *gin.Context, resp *http.Response) (*model.ErrorWithStatusC
 		return ErrorWrapper(err, "unmarshal_response_body_failed", http.StatusInternalServerError), nil
 	}
 
-	// Convert to the new format
-	newResponse := rerankResponseOpenAI2NewFormat(&openAIResponse)
-	jsonResponse, err := json.Marshal(newResponse)
+	jsonResponse, err := json.Marshal(openAIResponse)
 	if err != nil {
 		return ErrorWrapper(err, "marshal_response_body_failed", http.StatusInternalServerError), nil
 	}
@@ -196,9 +198,4 @@ func RerankHandler(c *gin.Context, resp *http.Response) (*model.ErrorWithStatusC
 		}
 	}
 	return nil, usage
-}
-
-func rerankResponseOpenAI2NewFormat(response *model.RerankResponse) *model.RerankResponse {
-	// The response is already in the new format, just return it
-	return response
 }
