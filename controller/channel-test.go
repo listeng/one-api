@@ -38,6 +38,9 @@ func buildTestRequest(modelName string, modelType int) *relaymodel.GeneralOpenAI
 			modelName = "text-embedding-ada-002"
 		case model.ModelTypeRerank:
 			modelName = "rerank-english-v2.0"
+		case model.ModelTypePaddleX:
+			// 飞桨模型取第一个可用模型
+			modelName = "ocr"
 		default: // ModelTypeLanguage
 			modelName = "gpt-3.5-turbo"
 		}
@@ -57,6 +60,17 @@ func buildTestRequest(modelName string, modelType int) *relaymodel.GeneralOpenAI
 			Model:     modelName,
 			Query:     "test query",
 			Documents: []string{"test document"},
+		}
+		return testRequest
+	case model.ModelTypePaddleX:
+		// 构建飞桨模型测试请求
+		// 使用一个简单的测试图像base64数据
+		testImageBase64 := test_img_data
+		fileType := 1
+		testRequest := &relaymodel.GeneralOpenAIRequest{
+			Model:    modelName,
+			File:     testImageBase64,
+			FileType: &fileType,
 		}
 		return testRequest
 	default: // ModelTypeLanguage
@@ -89,6 +103,16 @@ func testChannel(channel *model.Channel, request *relaymodel.GeneralOpenAIReques
 	case model.ModelTypeRerank:
 		testPath = "/v1/rerank"
 		relayMode = relaymode.Rerank
+	case model.ModelTypePaddleX:
+		// 飞桨模型使用第一个可用模型作为测试路径
+		// 飞桨模型的路径格式是 /模型名称，例如 /ocr
+		modelNames := strings.Split(channel.Models, ",")
+		if len(modelNames) > 0 {
+			testPath = "/" + modelNames[0]
+		} else {
+			testPath = "/ocr"
+		}
+		relayMode = relaymode.ChatCompletions // 使用默认模式
 	default: // ModelTypeLanguage
 		testPath = "/v1/chat/completions"
 		relayMode = relaymode.ChatCompletions
@@ -150,7 +174,8 @@ func testChannel(channel *model.Channel, request *relaymodel.GeneralOpenAIReques
 	if respErr != nil {
 		return fmt.Errorf("%s", respErr.Error.Message), &respErr.Error
 	}
-	if usage == nil {
+	// 飞桨模型不返回usage，所以跳过usage检查
+	if usage == nil && channel.ModelType != model.ModelTypePaddleX {
 		return errors.New("usage is nil"), nil
 	}
 	result := w.Result()

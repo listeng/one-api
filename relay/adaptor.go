@@ -14,6 +14,7 @@ import (
 	"one-api/relay/adaptor/gemini"
 	"one-api/relay/adaptor/ollama"
 	"one-api/relay/adaptor/openai"
+	"one-api/relay/adaptor/paddlex"
 	"one-api/relay/adaptor/palm"
 	"one-api/relay/adaptor/proxy"
 	"one-api/relay/adaptor/tencent"
@@ -61,6 +62,8 @@ func GetAdaptor(apiType int) adaptor.Adaptor {
 		return &vertexai.Adaptor{}
 	case apitype.Proxy:
 		return &proxy.Adaptor{}
+	case apitype.PaddleX:
+		return &paddlex.Adaptor{}
 	}
 	return nil
 }

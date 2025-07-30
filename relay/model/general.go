@@ -72,6 +72,19 @@ type GeneralOpenAIRequest struct {
 	Instruction string    `json:"instruction,omitempty"`
 	NumCtx      int       `json:"num_ctx,omitempty"`
 	Thinking    *Thinking `json:"thinking,omitempty"`
+	// 飞桨模型相关字段
+	File                      string   `json:"file,omitempty"`                      // 服务器可访问的图像文件或PDF文件的URL，或上述类型文件内容的Base64编码结果
+	FileType                  *int     `json:"fileType,omitempty"`                  // 文件类型。0表示PDF文件，1表示图像文件
+	UseDocUnwarping           *bool    `json:"useDocUnwarping,omitempty"`           // 请参阅产线对象中 predict 方法的 use_doc_unwarping 参数相关说明
+	UseTextlineOrientation    *bool    `json:"useTextlineOrientation,omitempty"`    // 请参阅产线对象中 predict 方法的 use_textline_orientation 参数相关说明
+	TextDetLimitSideLen       *int     `json:"textDetLimitSideLen,omitempty"`       // 请参阅产线对象中 predict 方法的 text_det_limit_side_len 参数相关说明
+	TextDetLimitType          *string  `json:"textDetLimitType,omitempty"`          // 请参阅产线对象中 predict 方法的 text_det_limit_type 参数相关说明
+	TextDetThresh             *float64 `json:"textDetThresh,omitempty"`             // 请参阅产线对象中 predict 方法的 text_det_thresh 参数相关说明
+	TextDetBoxThresh          *float64 `json:"textDetBoxThresh,omitempty"`          // 请参阅产线对象中 predict 方法的 text_det_box_thresh 参数相关说明
+	TextDetUnclipRatio        *float64 `json:"textDetUnclipRatio,omitempty"`        // 请参阅产线对象中 predict 方法的 text_det_unclip_ratio 参数相关说明
+	TextRecScoreThresh        *float64 `json:"textRecScoreThresh,omitempty"`        // 请参阅产线对象中 predict 方法的 text_rec_score_thresh 参数相关说明
+	Visualize                 *bool    `json:"visualize,omitempty"`                 // 是否返回可视化结果图以及处理过程中的中间图像等
+	UseDocOrientationClassify *bool    `json:"useDocOrientationClassify,omitempty"` // 请参阅产线对象中 predict 方法的 use_doc_orientation_classify 参数相关说明
 }
 
 type Thinking struct {

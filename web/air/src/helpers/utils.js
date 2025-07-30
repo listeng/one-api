@@ -41,10 +41,30 @@ export function getFooterHTML() {
 export async function copy(text) {
   let okay = true;
   try {
-    await navigator.clipboard.writeText(text);
+    // 优先使用现代 Clipboard API
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      await navigator.clipboard.writeText(text);
+    } else {
+      // 降级方案：使用传统的 document.execCommand
+      const textArea = document.createElement('textarea');
+      textArea.value = text;
+      textArea.style.position = 'fixed';
+      textArea.style.left = '-999999px';
+      textArea.style.top = '-999999px';
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      
+      const successful = document.execCommand('copy');
+      document.body.removeChild(textArea);
+      
+      if (!successful) {
+        throw new Error('execCommand copy failed');
+      }
+    }
   } catch (e) {
     okay = false;
-    console.error(e);
+    console.error('Copy failed:', e);
   }
   return okay;
 }

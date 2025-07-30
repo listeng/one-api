@@ -368,7 +368,19 @@ const PersonalSetting = () => {
               }
             >
               <Typography.Title heading={6}>调用信息</Typography.Title>
-              <p>可用模型（可点击复制）</p>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                <p>可用模型（可点击复制）</p>
+                <Button 
+                  size="small" 
+                  type="primary" 
+                  onClick={() => {
+                    const allModels = models.join('、');
+                    copyText(allModels);
+                  }}
+                >
+                  复制所有
+                </Button>
+              </div>
               <div style={{ marginTop: 10 }}>
                 <Space wrap>
                   {models.map((model) => (

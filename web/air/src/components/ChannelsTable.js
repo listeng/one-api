@@ -49,6 +49,8 @@ function renderModelType(modelType) {
       return <Tag size="large" color="green">嵌入模型</Tag>;
     case 3:
       return <Tag size="large" color="orange">重排模型</Tag>;
+    case 4:
+      return <Tag size="large" color="purple">飞桨产线</Tag>;
     default:
       return <Tag size="large" color="grey">未知</Tag>;
   }

@@ -39,6 +39,8 @@ func ToAPIType(channelType int) int {
 		apiType = apitype.VertexAI
 	case Proxy:
 		apiType = apitype.Proxy
+	case PaddleX:
+		apiType = apitype.PaddleX
 	}
 
 	return apiType

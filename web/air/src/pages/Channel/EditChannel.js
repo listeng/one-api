@@ -22,6 +22,8 @@ function type2secretPrompt(type) {
             return '按照如下格式输入：APIKey-AppId，例如：fastgpt-0sp2gtvfdgyi4k30jwlgwf1i-64f335d84283f05518e9e041';
         case 23:
             return '按照如下格式输入：AppId|SecretId|SecretKey';
+        case 46:
+            return '请输入飞桨模型的API密钥，没有的话填123456';
         default:
             return '请输入渠道对应的鉴权密钥';
     }
@@ -96,6 +98,11 @@ const EditChannel = (props) => {
                     break;
                 case 26:
                     localModels = ['glm-4', 'glm-4v', 'glm-3-turbo'];
+                    break;
+                case 46:
+                    localModels = ['ocr', 'table-recognition', 'layout-parsing', 'formula-recognition', 'seal-recognition', 'document-preprocessing', 'image-classification', 'object-detection', 'instance-segmentation', 'semantic-segmentation', 'multilabel-image-classification', 'small-object-detection', 'anomaly-detection', 'rotated-object-detection', 'shitu-index-build', 'face-recognition-index-build'];
+                    // 飞桨模型自动设置模型类型为飞桨产线
+                    setInputs((inputs) => ({...inputs, model_type: 4}));
                     break;
                 case 2:
                     localModels = ['mj_imagine', 'mj_variation', 'mj_reroll', 'mj_blend', 'mj_upscale', 'mj_describe'];
@@ -324,14 +331,19 @@ const EditChannel = (props) => {
                     <Select
                       name='model_type'
                       required
-                      optionList={[
-                        { label: '语言模型', value: 1 },
-                        { label: '嵌入模型', value: 2 },
-                        { label: '重排模型', value: 3 }
-                      ]}
+                      optionList={
+                        inputs.type === 46 
+                          ? [{ label: '飞桨产线', value: 4 }]
+                          : [
+                              { label: '语言模型', value: 1 },
+                              { label: '嵌入模型', value: 2 },
+                              { label: '重排模型', value: 3 },
+                            ]
+                      }
                       value={inputs.model_type}
                       onChange={value => handleInputChange('model_type', value)}
                       style={{ width: '50%' }}
+                      disabled={inputs.type === 46}
                     />
                     {
                       inputs.type === 3 && (
@@ -380,11 +392,29 @@ const EditChannel = (props) => {
                       inputs.type === 8 && (
                         <>
                             <div style={{ marginTop: 10 }}>
-                                <Typography.Text strong>Base URL：</Typography.Text>
+                                <Typography.Text strong>自定义 URL：</Typography.Text>
                             </div>
                             <Input
                               name='base_url'
-                              placeholder={'请输入自定义渠道的 Base URL'}
+                              placeholder={'请输入自定义渠道的 URL'}
+                              onChange={value => {
+                                  handleInputChange('base_url', value)
+                              }}
+                              value={inputs.base_url}
+                              autoComplete='new-password'
+                            />
+                        </>
+                      )
+                    }
+                    {
+                      inputs.type === 46 && (
+                        <>
+                            <div style={{ marginTop: 10 }}>
+                                <Typography.Text strong>自定义 URL：</Typography.Text>
+                            </div>
+                            <Input
+                              name='base_url'
+                              placeholder={'请输入飞桨模型的自定义 URL，例如：https://api.paddlepaddle.org'}
                               onChange={value => {
                                   handleInputChange('base_url', value)
                               }}
@@ -613,7 +643,7 @@ const EditChannel = (props) => {
                       )
                     }
                     {
-                      inputs.type !== 3 && inputs.type !== 8 && inputs.type !== 22 && (
+                      inputs.type !== 3 && inputs.type !== 8 && inputs.type !== 22 && inputs.type !== 46 && (
                         <>
                             <div style={{ marginTop: 10 }}>
                                 <Typography.Text strong>代理：</Typography.Text>

@@ -14,4 +14,6 @@ const (
 	Rerank
 	// Proxy is a special relay mode for proxying requests to custom upstream
 	Proxy
+	// PaddleX is for PaddleX API endpoints
+	PaddleX
 )

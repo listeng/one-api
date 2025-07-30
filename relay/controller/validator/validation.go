@@ -9,12 +9,16 @@ import (
 )
 
 func ValidateTextRequest(textRequest *model.GeneralOpenAIRequest, relayMode int) error {
-	if textRequest.MaxTokens < 0 || textRequest.MaxTokens > math.MaxInt32/2 {
-		return errors.New("max_tokens is invalid")
+	// PaddleX模式不需要验证MaxTokens和Model
+	if relayMode != relaymode.PaddleX {
+		if textRequest.MaxTokens < 0 || textRequest.MaxTokens > math.MaxInt32/2 {
+			return errors.New("max_tokens is invalid")
+		}
+		if textRequest.Model == "" {
+			return errors.New("model is required")
+		}
 	}
-	if textRequest.Model == "" {
-		return errors.New("model is required")
-	}
+
 	switch relayMode {
 	case relaymode.Completions:
 		if textRequest.Prompt == "" {
@@ -33,6 +37,8 @@ func ValidateTextRequest(textRequest *model.GeneralOpenAIRequest, relayMode int)
 		if textRequest.Instruction == "" {
 			return errors.New("field instruction is required")
 		}
+	case relaymode.PaddleX:
+		// PaddleX模式不需要额外的字段验证
 	}
 	return nil
 }

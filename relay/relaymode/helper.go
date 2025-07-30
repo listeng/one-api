@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"one-api/common/config"
+	"one-api/middleware"
 )
 
 func GetByPath(path string) int {
@@ -41,6 +42,8 @@ func GetByPath(path string) int {
 		relayMode = AudioTranslation
 	} else if strings.HasPrefix(pathReal, "/v1/oneapi/proxy") {
 		relayMode = Proxy
+	} else if middleware.IsPaddleXAPI(pathReal) {
+		relayMode = PaddleX
 	}
 	return relayMode
 }
