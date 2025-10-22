@@ -19,6 +19,7 @@ export const ROUTES = {
   TOKEN: getRoutePath('/token'),
   REDEMPTION: getRoutePath('/redemption'),
   USER: getRoutePath('/user'),
+  USER_TOKENS: getRoutePath('/user/:id/tokens'),
   SETTING: getRoutePath('/setting'),
   LOG: getRoutePath('/log'),
   CHAT: getRoutePath('/chat'),

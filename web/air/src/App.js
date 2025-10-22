@@ -17,6 +17,7 @@ import PasswordResetConfirm from './components/PasswordResetConfirm';
 import { UserContext } from './context/User';
 import Channel from './pages/Channel';
 import Token from './pages/Token';
+import UserTokens from './pages/UserTokens';
 import EditChannel from './pages/Channel/EditChannel';
 import Redemption from './pages/Redemption';
 import TopUp from './pages/TopUp';
@@ -114,6 +115,14 @@ function App() {
             element={
               <PrivateRoute>
                 <User />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path={ROUTES.USER_TOKENS}
+            element={
+              <PrivateRoute>
+                <UserTokens />
               </PrivateRoute>
             }
           />

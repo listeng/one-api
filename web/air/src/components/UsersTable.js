@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { API, showError, showSuccess } from '../helpers';
+import { useNavigate } from 'react-router-dom';
+import { API, isAdmin, showError, showSuccess } from '../helpers';
 import { Button, Form, Popconfirm, Space, Table, Tag, Tooltip, Dropdown } from '@douyinfe/semi-ui';
 import { ITEMS_PER_PAGE } from '../constants';
 import { renderGroup, renderNumber, renderQuota } from '../helpers/render';
 import AddUser from '../pages/User/AddUser';
 import EditUser from '../pages/User/EditUser';
+import { ROUTES } from '../helpers/routes';
 
 function renderRole(role) {
   switch (role) {
@@ -20,6 +22,7 @@ function renderRole(role) {
 }
 
 const UsersTable = () => {
+  const navigate = useNavigate();
   const columns = [{
     title: 'ID', dataIndex: 'id'
   }, {
@@ -111,6 +114,18 @@ const UsersTable = () => {
           setEditingUser(record);
           setShowEditUser(true);
         }}>编辑</Button>
+        {isAdmin() && (
+          <Button
+            theme="light"
+            type="primary"
+            style={{ marginRight: 1 }}
+            onClick={() => {
+              navigate(ROUTES.USER_TOKENS.replace(':id', record.id));
+            }}
+          >
+            查看令牌
+          </Button>
+        )}
       </>
       <Popconfirm
         title="确定是否要删除此用户？"

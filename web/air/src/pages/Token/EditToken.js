@@ -21,13 +21,15 @@ import { Divider } from 'semantic-ui-react';
 const EditToken = (props) => {
   const [isEdit, setIsEdit] = useState(false);
   const [loading, setLoading] = useState(isEdit);
+  const ownerId = props.userId;
   const originInputs = {
     name: '',
     remain_quota: isEdit ? 0 : 500000,
     expired_time: -1,
     unlimited_quota: false,
     model_limits_enabled: false,
-    model_limits: []
+    model_limits: [],
+    user_id: ownerId
   };
   const [inputs, setInputs] = useState(originInputs);
   const { name, remain_quota, expired_time, unlimited_quota, model_limits_enabled, model_limits } = inputs;
@@ -75,7 +77,8 @@ const EditToken = (props) => {
 
   const loadToken = async () => {
     setLoading(true);
-    let res = await API.get(`/api/token/${props.editingToken.id}`);
+    const config = ownerId ? { params: { user_id: ownerId } } : {};
+    let res = await API.get(`/api/token/${props.editingToken.id}`, config);
     const { success, message, data } = res.data;
     if (success) {
       if (data.expired_time !== -1) {
@@ -96,6 +99,9 @@ const EditToken = (props) => {
     setIsEdit(props.editingToken.id !== undefined);
   }, [props.editingToken.id]);
 
+  // 新增 state 变量 tokenCount 来记录用户想要创建的令牌数量，默认为 1
+  const [tokenCount, setTokenCount] = useState(1);
+
   useEffect(() => {
     if (!isEdit) {
       setInputs(originInputs);
@@ -109,8 +115,12 @@ const EditToken = (props) => {
     // loadModels();
   }, [isEdit]);
 
-  // 新增 state 变量 tokenCount 来记录用户想要创建的令牌数量，默认为 1
-  const [tokenCount, setTokenCount] = useState(1);
+  useEffect(() => {
+    if (!isEdit) {
+      setInputs(originInputs);
+      setTokenCount(1);
+    }
+  }, [ownerId]);
 
   // 新增处理 tokenCount 变化的函数
   const handleTokenCountChange = (value) => {
@@ -147,6 +157,9 @@ const EditToken = (props) => {
         localInputs.expired_time = Math.ceil(time / 1000);
       }
       // localInputs.model_limits = localInputs.model_limits.join(',');
+      if (ownerId) {
+        localInputs.user_id = ownerId;
+      }
       let res = await API.put(`/api/token/`, { ...localInputs, id: parseInt(props.editingToken.id) });
       const { success, message } = res.data;
       if (success) {
@@ -167,6 +180,9 @@ const EditToken = (props) => {
         }
         localInputs.remain_quota = parseInt(localInputs.remain_quota);
 
+        if (ownerId) {
+          localInputs.user_id = ownerId;
+        }
         if (localInputs.expired_time !== -1) {
           let time = Date.parse(localInputs.expired_time);
           if (isNaN(time)) {

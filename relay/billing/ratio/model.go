@@ -85,6 +85,7 @@ var ModelRatio = map[string]float64{
 	"claude-3-5-sonnet-20240620": 3.0 / 1000 * USD,
 	"claude-3-5-sonnet-20241022": 3.0 / 1000 * USD,
 	"claude-3-7-sonnet-20250219": 3.0 / 1000 * USD,
+	"claude-sonnet-4-5-20250929":   3.0 / 1000 * USD,
 	"claude-sonnet-4-20250514":   3.0 / 1000 * USD,
 	"claude-sonnet-4-latest":     3.0 / 1000 * USD,
 	"claude-3-7-sonnet-latest":   3.0 / 1000 * USD,

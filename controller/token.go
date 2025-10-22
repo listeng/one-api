@@ -15,14 +15,21 @@ import (
 )
 
 func GetAllTokens(c *gin.Context) {
-	userId := c.GetInt(ctxkey.Id)
 	p, _ := strconv.Atoi(c.Query("p"))
 	if p < 0 {
 		p = 0
 	}
 
 	order := c.Query("order")
-	tokens, err := model.GetAllUserTokens(userId, p*config.ItemsPerPage, config.ItemsPerPage, order)
+	targetUserId, _, err := resolveTokenUserId(c, 0)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": err.Error(),
+		})
+		return
+	}
+	tokens, err := model.GetAllUserTokens(targetUserId, p*config.ItemsPerPage, config.ItemsPerPage, order)
 
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
@@ -40,9 +47,16 @@ func GetAllTokens(c *gin.Context) {
 }
 
 func SearchTokens(c *gin.Context) {
-	userId := c.GetInt(ctxkey.Id)
 	keyword := c.Query("keyword")
-	tokens, err := model.SearchUserTokens(userId, keyword)
+	targetUserId, _, err := resolveTokenUserId(c, 0)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": err.Error(),
+		})
+		return
+	}
+	tokens, err := model.SearchUserTokens(targetUserId, keyword)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
@@ -60,7 +74,6 @@ func SearchTokens(c *gin.Context) {
 
 func GetToken(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
-	userId := c.GetInt(ctxkey.Id)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
@@ -68,11 +81,30 @@ func GetToken(c *gin.Context) {
 		})
 		return
 	}
-	token, err := model.GetTokenByIds(id, userId)
+	targetUserId, override, err := resolveTokenUserId(c, 0)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
 			"message": err.Error(),
+		})
+		return
+	}
+	role := c.GetInt(ctxkey.Role)
+	token, err := model.GetTokenByIds(id, targetUserId)
+	if err != nil && role >= model.RoleAdminUser && !override {
+		token, err = model.GetTokenById(id)
+	}
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": err.Error(),
+		})
+		return
+	}
+	if override && token.UserId != targetUserId {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": "目标用户与令牌不匹配",
 		})
 		return
 	}
@@ -121,6 +153,24 @@ func validateToken(c *gin.Context, token model.Token) error {
 	return nil
 }
 
+func resolveTokenUserId(c *gin.Context, payloadUserId int) (int, bool, error) {
+	currentUserId := c.GetInt(ctxkey.Id)
+	role := c.GetInt(ctxkey.Role)
+	if role >= model.RoleAdminUser {
+		if payloadUserId > 0 {
+			return payloadUserId, true, nil
+		}
+		if userIdStr := c.Query("user_id"); userIdStr != "" {
+			userId, err := strconv.Atoi(userIdStr)
+			if err != nil || userId <= 0 {
+				return 0, false, fmt.Errorf("无效的用户 ID")
+			}
+			return userId, true, nil
+		}
+	}
+	return currentUserId, false, nil
+}
+
 func AddToken(c *gin.Context) {
 	token := model.Token{}
 	err := c.ShouldBindJSON(&token)
@@ -140,8 +190,17 @@ func AddToken(c *gin.Context) {
 		return
 	}
 
+	targetUserId, _, err := resolveTokenUserId(c, token.UserId)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": err.Error(),
+		})
+		return
+	}
+
 	cleanToken := model.Token{
-		UserId:         c.GetInt(ctxkey.Id),
+		UserId:         targetUserId,
 		Name:           token.Name,
 		Key:            random.GenerateKey(),
 		CreatedTime:    helper.GetTimestamp(),
@@ -170,8 +229,24 @@ func AddToken(c *gin.Context) {
 
 func DeleteToken(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
-	userId := c.GetInt(ctxkey.Id)
-	err := model.DeleteTokenById(id, userId)
+	targetUserId, override, err := resolveTokenUserId(c, 0)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": err.Error(),
+		})
+		return
+	}
+	role := c.GetInt(ctxkey.Role)
+	err = model.DeleteTokenById(id, targetUserId)
+	if err != nil && role >= model.RoleAdminUser && !override {
+		token, innerErr := model.GetTokenById(id)
+		if innerErr != nil {
+			err = innerErr
+		} else {
+			err = token.Delete()
+		}
+	}
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
@@ -187,7 +262,6 @@ func DeleteToken(c *gin.Context) {
 }
 
 func UpdateToken(c *gin.Context) {
-	userId := c.GetInt(ctxkey.Id)
 	statusOnly := c.Query("status_only")
 	token := model.Token{}
 	err := c.ShouldBindJSON(&token)
@@ -206,11 +280,30 @@ func UpdateToken(c *gin.Context) {
 		})
 		return
 	}
-	cleanToken, err := model.GetTokenByIds(token.Id, userId)
+	targetUserId, override, err := resolveTokenUserId(c, token.UserId)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
 			"message": err.Error(),
+		})
+		return
+	}
+	role := c.GetInt(ctxkey.Role)
+	cleanToken, err := model.GetTokenByIds(token.Id, targetUserId)
+	if err != nil && role >= model.RoleAdminUser && !override {
+		cleanToken, err = model.GetTokenById(token.Id)
+	}
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": err.Error(),
+		})
+		return
+	}
+	if override && cleanToken.UserId != targetUserId {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": "目标用户与令牌不匹配",
 		})
 		return
 	}

@@ -48,7 +48,7 @@ function renderStatus(status, model_limits_enabled = false) {
   }
 }
 
-const TokensTable = () => {
+const TokensTable = ({ userId }) => {
 
   const link_menu = [
     {
@@ -235,9 +235,17 @@ const TokensTable = () => {
   };
 
   let pageData = tokens.slice((activePage - 1) * pageSize, activePage * pageSize);
+  const buildQueryString = (params) => {
+    const query = new URLSearchParams(params);
+    if (userId) {
+      query.set('user_id', userId);
+    }
+    return query.toString();
+  };
   const loadTokens = async (startIdx) => {
     setLoading(true);
-    const res = await API.get(`/api/token/?p=${startIdx}&size=${pageSize}&order=${orderBy}`);
+    const query = buildQueryString({ p: startIdx, size: pageSize, order: orderBy });
+    const res = await API.get(`/api/token/?${query}`);
     const { success, message, data } = res.data;
     if (success) {
       if (startIdx === 0) {
@@ -257,7 +265,7 @@ const TokensTable = () => {
     (async () => {
       if (activePage === Math.ceil(tokens.length / pageSize) + 1) {
         // In this case we have to load more data and then append them.
-        await loadTokens(activePage - 1, orderBy);
+        await loadTokens(activePage - 1);
       }
       setActivePage(activePage);
     })();
@@ -363,12 +371,15 @@ const TokensTable = () => {
   };
 
   useEffect(() => {
-    loadTokens(0, orderBy)
+    if (activePage !== 1) {
+      setActivePage(1);
+    }
+    loadTokens(0)
       .then()
       .catch((reason) => {
         showError(reason);
       });
-  }, [pageSize, orderBy]);
+  }, [pageSize, orderBy, userId]);
 
   const removeRecord = key => {
     let newDataSource = [...tokens];
@@ -385,10 +396,13 @@ const TokensTable = () => {
   const manageToken = async (id, action, record) => {
     setLoading(true);
     let data = { id };
+    if (userId) {
+      data.user_id = userId;
+    }
     let res;
     switch (action) {
       case 'delete':
-        res = await API.delete(`/api/token/${id}/`);
+        res = await API.delete(`/api/token/${id}/`, userId ? { params: { user_id: userId } } : {});
         break;
       case 'enable':
         data.status = 1;
@@ -427,7 +441,8 @@ const TokensTable = () => {
       return;
     }
     setSearching(true);
-    const res = await API.get(`/api/token/search?keyword=${searchKeyword}&token=${searchToken}`);
+    const query = buildQueryString({ keyword: searchKeyword, token: searchToken });
+    const res = await API.get(`/api/token/search?${query}`);
     const { success, message, data } = res.data;
     if (success) {
       setTokensFormat(data);
@@ -511,7 +526,7 @@ const TokensTable = () => {
 
   return (
     <>
-      <EditToken refresh={refresh} editingToken={editingToken} visiable={showEdit} handleClose={closeEdit}></EditToken>
+      <EditToken refresh={refresh} editingToken={editingToken} visiable={showEdit} handleClose={closeEdit} userId={userId}></EditToken>
       <Form layout="horizontal" style={{ marginTop: 10 }} labelPosition={'left'}>
         <Form.Input
           field="keyword"
